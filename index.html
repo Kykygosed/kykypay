@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KykyPay — Payez autrement</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%23F2B84B%22/><text x=%2250%22 y=%2268%22 font-size=%2258%22 font-family=%22Arial%22 font-weight=%22900%22 text-anchor=%22middle%22 fill=%22%230A0D14%22>K</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D14;
+  --bg-alt:#0D111A;
+  --surface:#141a28;
+  --surface-2:#1c2436;
+  --surface-3:#232c42;
+  --border:rgba(255,255,255,0.08);
+  --border-soft:rgba(255,255,255,0.05);
+  --text:#F3F5FA;
+  --text-muted:#8B93A7;
+  --text-dim:#5B6376;
+  --gold:#F2B84B;
+  --gold-soft:#F7D68B;
+  --gold-dim:#C99A3E;
+  --teal:#2FE6B8;
+  --red:#FF5C6C;
+  --radius-lg:22px;
+  --radius-md:16px;
+  --radius-sm:10px;
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,0.6);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(242,184,75,0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47,230,184,0.07), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+::selection{background:var(--gold); color:#0A0D14;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:8px;}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+input{font-family:inherit;}
+.hidden{display:none !important;}
+
+/* ---------- Loader ---------- */
+#bootLoader{
+  position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+  background:var(--bg); flex-direction:column; gap:18px;
+}
+.boot-mark{
+  width:56px; height:56px; border-radius:16px;
+  background:linear-gradient(155deg, var(--gold-soft), var(--gold-dim));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#0A0D14;
+  animation:pulse 1.4s ease-in-out infinite;
+  box-shadow:0 0 40px rgba(242,184,75,0.35);
+}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.boot-text{color:var(--text-dim); font-size:13px; letter-spacing:0.08em; text-transform:uppercase;}
+
+/* ================= AUTH SCREEN ================= */
+#authScreen{
+  min-height:100vh; display:grid; grid-template-columns:1.1fr 1fr;
+}
+@media (max-width:920px){ #authScreen{grid-template-columns:1fr;} .auth-hero{display:none;} }
+
+.auth-hero{
+  position:relative; overflow:hidden;
+  padding:56px 60px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  background:linear-gradient(160deg, #0D1220 0%, #0A0D14 55%, #0B0F1A 100%);
+  border-right:1px solid var(--border);
+}
+.auth-hero::before{
+  content:''; position:absolute; width:520px; height:520px; border-radius:50%;
+  background:radial-gradient(circle, rgba(242,184,75,0.16), transparent 70%);
+  top:-160px; right:-160px; filter:blur(10px);
+}
+.hero-brand{display:flex; align-items:center; gap:12px; z-index:1;}
+.hero-brand .mark{
+  width:38px; height:38px; border-radius:11px;
+  background:linear-gradient(155deg, var(--gold-soft), var(--gold-dim));
+  display:flex; align-items:center; justify-content:center; color:#0A0D14; font-weight:700; font-size:19px;
+}
+.hero-brand span{font-weight:700; font-size:19px; letter-spacing:-0.01em;}
+
+.hero-copy{z-index:1; max-width:460px;}
+.hero-copy .eyebrow{
+  color:var(--gold); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; font-weight:600;
+  margin-bottom:18px; display:flex; align-items:center; gap:8px;
+}
+.hero-copy .eyebrow::before{content:''; width:18px; height:1px; background:var(--gold);}
+.hero-copy h1{font-size:44px; line-height:1.08; font-weight:700; letter-spacing:-0.02em; margin-bottom:18px;}
+.hero-copy h1 em{font-style:normal; color:var(--gold);}
+.hero-copy p{color:var(--text-muted); font-size:15.5px; line-height:1.6;}
+
+/* signature: floating virtual card */
+.hero-card-wrap{z-index:1; perspective:1000px; margin-top:40px;}
+.hero-card{
+  width:360px; max-width:100%; aspect-ratio:1.586; border-radius:20px; position:relative;
+  padding:26px; color:#fff; overflow:hidden;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.10), transparent 40%),
+    linear-gradient(155deg, #1b2236 0%, #0d1119 60%, #0a0d14 100%);
+  border:1px solid rgba(255,255,255,0.10);
+  box-shadow:var(--shadow-lg);
+  transform:rotateX(8deg) rotateY(-14deg);
+  transition:transform .2s ease;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.hero-card::after{
+  content:''; position:absolute; inset:0; opacity:0.5;
+  background:linear-gradient(115deg, transparent 30%, rgba(242,184,75,0.16) 45%, transparent 60%);
+  background-size:220% 220%;
+  animation:sheen 5s ease-in-out infinite;
+}
+@keyframes sheen{0%{background-position:0% 0%;}50%{background-position:100% 100%;}100%{background-position:0% 0%;}}
+.hero-card .row-top{display:flex; justify-content:space-between; align-items:flex-start; z-index:1;}
+.chip{width:38px; height:28px; border-radius:6px; background:linear-gradient(155deg,#F7D68B,#C99A3E);}
+.hero-card .brand-mini{font-family:'Space Grotesk'; font-weight:700; font-size:14px; letter-spacing:0.02em; color:var(--gold-soft);}
+.hero-card .num{font-family:'JetBrains Mono'; letter-spacing:0.12em; font-size:16.5px; z-index:1; opacity:0.9;}
+.hero-card .row-bottom{display:flex; justify-content:space-between; align-items:flex-end; z-index:1;}
+.hero-card .holder{font-size:11px; text-transform:uppercase; letter-spacing:0.05em; opacity:0.6; margin-bottom:4px;}
+.hero-card .holder-name{font-family:'Space Grotesk'; font-size:14px; font-weight:600;}
+.hero-card .card-balance{font-family:'JetBrains Mono'; font-size:12px; opacity:0.55; text-align:right;}
+
+.hero-ticker{margin-top:26px; z-index:1; font-size:12.5px; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+.hero-ticker .dot{width:6px; height:6px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); animation:blink 1.6s infinite;}
+@keyframes blink{50%{opacity:0.3;}}
+
+/* ---- auth form panel ---- */
+.auth-panel{
+  display:flex; align-items:center; justify-content:center; padding:40px 24px;
+}
+.auth-box{width:100%; max-width:400px;}
+.auth-tabs{display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); padding:4px; border-radius:12px; margin-bottom:28px;}
+.auth-tab{flex:1; text-align:center; padding:9px 0; border:none; background:transparent; color:var(--text-muted); border-radius:8px; font-weight:600; font-size:13.5px; transition:all .2s;}
+.auth-tab.active{background:var(--surface-3); color:var(--text);}
+
+.auth-title{font-size:23px; font-weight:700; margin-bottom:6px; letter-spacing:-0.01em;}
+.auth-sub{color:var(--text-muted); font-size:13.5px; margin-bottom:26px;}
+
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12.5px; color:var(--text-muted); margin-bottom:7px; font-weight:500;}
+.field .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.input, .field input{
+  width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text);
+  padding:12px 14px; border-radius:11px; font-size:14px; outline:none; transition:border-color .15s, background .15s;
+}
+.input:focus, .field input:focus{border-color:var(--gold-dim); background:var(--surface-2);}
+.pw-wrap{position:relative;}
+.pw-toggle{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-dim); font-size:12px; font-weight:600;}
+
+.avatar-picker{display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+.avatar-preview{
+  width:56px; height:56px; border-radius:50%; background:var(--surface-2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; font-weight:700; color:var(--text-muted);
+}
+.avatar-preview img{width:100%; height:100%; object-fit:cover;}
+.avatar-picker .file-btn{
+  border:1px dashed var(--border); background:var(--surface); color:var(--text-muted);
+  padding:9px 14px; border-radius:10px; font-size:12.5px; font-weight:500;
+}
+.avatar-picker .file-btn:hover{border-color:var(--gold-dim); color:var(--gold-soft);}
+.avatar-picker input[type=file]{display:none;}
+
+.btn-primary{
+  width:100%; padding:13px 0; border:none; border-radius:12px; font-weight:700; font-size:14.5px;
+  background:linear-gradient(150deg, var(--gold-soft), var(--gold-dim)); color:#0A0D14;
+  transition:transform .12s, box-shadow .12s; box-shadow:0 8px 24px -10px rgba(242,184,75,0.5);
+}
+.btn-primary:hover{transform:translateY(-1px); box-shadow:0 12px 28px -8px rgba(242,184,75,0.6);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:0.55; cursor:not-allowed; transform:none;}
+.btn-primary .spin{display:none;}
+.btn-primary.loading .txt{visibility:hidden;}
+.btn-primary.loading .spin{display:block; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
+.btn-primary{position:relative;}
+
+.auth-error{
+  background:rgba(255,92,108,0.1); border:1px solid rgba(255,92,108,0.3); color:#ffb3ba;
+  font-size:12.5px; padding:10px 12px; border-radius:10px; margin-bottom:16px; display:none;
+}
+.auth-error.show{display:block;}
+.auth-foot{text-align:center; margin-top:22px; font-size:12.5px; color:var(--text-dim);}
+
+/* ================= APP SCREEN ================= */
+#appScreen{min-height:100vh; display:flex; flex-direction:column;}
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(10,13,20,0.7); backdrop-filter:blur(14px);
+  position:sticky; top:0; z-index:50;
+}
+.topbar .brand{display:flex; align-items:center; gap:10px;}
+.topbar .brand .mark{width:32px; height:32px; border-radius:9px; background:linear-gradient(155deg, var(--gold-soft), var(--gold-dim)); display:flex; align-items:center; justify-content:center; color:#0A0D14; font-weight:700;}
+.topbar .brand span{font-family:'Space Grotesk'; font-weight:700; font-size:16.5px;}
+.topbar-right{display:flex; align-items:center; gap:14px;}
+
+.profile-chip{display:flex; align-items:center; gap:9px; padding:6px 10px 6px 6px; border-radius:30px; border:1px solid var(--border); background:var(--surface); position:relative;}
+.profile-chip:hover{border-color:var(--surface-3);}
+.chip-avatar{width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--gold-soft);}
+.chip-avatar img{width:100%; height:100%; object-fit:cover;}
+.profile-chip .pname{font-size:13px; font-weight:600;}
+
+.profile-menu{
+  position:absolute; top:calc(100% + 10px); right:0; width:220px; background:var(--surface-2); border:1px solid var(--border);
+  border-radius:14px; padding:8px; box-shadow:var(--shadow-lg); display:none; z-index:60;
+}
+.profile-menu.open{display:block;}
+.profile-menu .pm-head{padding:10px 10px 12px; border-bottom:1px solid var(--border-soft); margin-bottom:6px;}
+.profile-menu .pm-head .n{font-weight:700; font-size:13.5px;}
+.profile-menu .pm-head .e{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+.pm-item{width:100%; text-align:left; background:none; border:none; color:var(--text-muted); padding:9px 10px; border-radius:9px; font-size:13px; display:flex; align-items:center; gap:9px;}
+.pm-item:hover{background:var(--surface-3); color:var(--text);}
+.pm-item.danger{color:#ff8f97;}
+.pm-item.danger:hover{background:rgba(255,92,108,0.1);}
+
+.main{flex:1; width:100%; max-width:1080px; margin:0 auto; padding:34px 24px 80px; display:grid; grid-template-columns:400px 1fr; gap:26px; align-items:start;}
+@media (max-width:860px){ .main{grid-template-columns:1fr;} }
+
+/* ---- balance card ---- */
+.card-panel{position:sticky; top:88px;}
+.balance-card{
+  border-radius:24px; padding:28px; color:#fff; position:relative; overflow:hidden;
+  background:linear-gradient(155deg, #1b2236 0%, #0d1119 60%, #0a0d14 100%);
+  border:1px solid rgba(255,255,255,0.08); box-shadow:var(--shadow-lg);
+  transform-style:preserve-3d; transition:transform .12s ease;
+  aspect-ratio:1.586/1; display:flex; flex-direction:column; justify-content:space-between;
+}
+.balance-card::after{
+  content:''; position:absolute; inset:0; opacity:0.45; pointer-events:none;
+  background:linear-gradient(115deg, transparent 30%, rgba(242,184,75,0.16) 45%, transparent 60%);
+  background-size:220% 220%; animation:sheen 5s ease-in-out infinite;
+}
+.balance-card .row-top{display:flex; justify-content:space-between; align-items:flex-start; z-index:1;}
+.balance-card .brand-mini{font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:var(--gold-soft);}
+.balance-card .num{font-family:'JetBrains Mono'; letter-spacing:0.12em; font-size:15px; opacity:0.85; z-index:1;}
+.balance-card .amount-block{z-index:1;}
+.balance-card .amount-label{font-size:11px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.55; margin-bottom:6px;}
+.balance-card .amount{font-family:'JetBrains Mono'; font-size:34px; font-weight:700; letter-spacing:-0.01em;}
+.balance-card .row-bottom{display:flex; justify-content:space-between; align-items:flex-end; z-index:1;}
+.balance-card .holder-name{font-family:'Space Grotesk'; font-weight:600; font-size:13.5px;}
+
+.quick-actions{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;}
+.qa-btn{
+  background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:7px; color:var(--text); font-size:12.5px; font-weight:600;
+  transition:border-color .15s, transform .1s;
+}
+.qa-btn:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
+.qa-btn .ic{width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;}
+.qa-btn.send .ic{background:rgba(242,184,75,0.14); color:var(--gold);}
+.qa-btn.req .ic{background:rgba(47,230,184,0.12); color:var(--teal);}
+
+.mini-note{margin-top:16px; font-size:11.5px; color:var(--text-dim); line-height:1.6; padding:12px 14px; background:var(--surface); border:1px solid var(--border-soft); border-radius:12px;}
+
+/* ---- history panel ---- */
+.panel{background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:22px;}
+.panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+.panel-head h2{font-size:16.5px; font-weight:700;}
+.panel-head .sub{font-size:12px; color:var(--text-dim);}
+
+.tx-list{display:flex; flex-direction:column; gap:2px; max-height:520px; overflow-y:auto;}
+.tx-row{display:flex; align-items:center; gap:12px; padding:12px 8px; border-radius:12px; transition:background .15s;}
+.tx-row:hover{background:var(--surface-2);}
+.tx-avatar{width:40px; height:40px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--gold-soft); flex-shrink:0; overflow:hidden;}
+.tx-avatar img{width:100%; height:100%; object-fit:cover;}
+.tx-mid{flex:1; min-width:0;}
+.tx-mid .t1{font-size:13.5px; font-weight:600;}
+.tx-mid .t2{font-size:11.5px; color:var(--text-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tx-amount{font-family:'JetBrains Mono'; font-weight:700; font-size:14px; flex-shrink:0;}
+.tx-amount.pos{color:var(--teal);}
+.tx-amount.neg{color:var(--red);}
+
+.empty-state{padding:50px 20px; text-align:center; color:var(--text-dim);}
+.empty-state .es-ic{font-size:30px; margin-bottom:12px; opacity:0.6;}
+.empty-state .es-t{font-size:13.5px; color:var(--text-muted); font-weight:600; margin-bottom:4px;}
+.empty-state .es-s{font-size:12px;}
+
+/* ---- modal ---- */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(6,8,13,0.7); backdrop-filter:blur(4px);
+  display:none; align-items:center; justify-content:center; z-index:200; padding:20px;
+}
+.modal-backdrop.open{display:flex;}
+.modal{width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border); border-radius:22px; padding:26px; box-shadow:var(--shadow-lg); animation:pop .18s ease;}
+@keyframes pop{from{transform:scale(0.96); opacity:0;}to{transform:scale(1); opacity:1;}}
+.modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+.modal-head h3{font-size:17px; font-weight:700;}
+.modal-close{background:var(--surface-3); border:none; color:var(--text-muted); width:28px; height:28px; border-radius:50%; font-size:15px;}
+.modal-close:hover{color:var(--text);}
+
+.recipient-preview{display:none; align-items:center; gap:10px; padding:10px; background:var(--surface); border:1px solid var(--border-soft); border-radius:12px; margin-top:8px; font-size:12.5px;}
+.recipient-preview.show{display:flex;}
+.recipient-preview .rp-av{width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--gold-soft); flex-shrink:0;}
+.recipient-preview .rp-av img{width:100%; height:100%; object-fit:cover;}
+
+.amount-input-wrap{position:relative;}
+.amount-input-wrap input{font-family:'JetBrains Mono'; font-size:22px; font-weight:700; padding-left:34px; padding-top:14px; padding-bottom:14px;}
+.amount-input-wrap .cur{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--gold); font-family:'JetBrains Mono'; font-weight:700; font-size:20px;}
+.balance-hint{font-size:11.5px; color:var(--text-dim); margin-top:6px;}
+
+/* ---- toasts ---- */
+#toastWrap{position:fixed; top:20px; right:20px; z-index:500; display:flex; flex-direction:column; gap:10px; max-width:340px;}
+.toast{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
+  box-shadow:var(--shadow-lg); animation:slidein .25s ease;
+}
+@keyframes slidein{from{transform:translateX(40px); opacity:0;}to{transform:translateX(0); opacity:1;}}
+.toast .t-ic{width:34px; height:34px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px;}
+.toast.success .t-ic{background:rgba(47,230,184,0.15); color:var(--teal);}
+.toast.error .t-ic{background:rgba(255,92,108,0.15); color:var(--red);}
+.toast .t-title{font-size:13px; font-weight:700;}
+.toast .t-sub{font-size:12px; color:var(--text-muted); margin-top:2px;}
+
+.spinner{width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(10,13,20,0.25); border-top-color:#0A0D14; animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner.light{border:2.5px solid rgba(255,255,255,0.25); border-top-color:#fff;}
+</style>
+</head>
+<body>
+
+<div id="bootLoader">
+  <div class="boot-mark">K</div>
+  <div class="boot-text">Chargement de KykyPay…</div>
+</div>
+
+<div id="toastWrap"></div>
+
+<!-- ================= AUTH SCREEN ================= -->
+<div id="authScreen" class="hidden">
+  <div class="auth-hero">
+    <div class="hero-brand"><div class="mark">K</div><span>KykyPay</span></div>
+
+    <div class="hero-copy">
+      <div class="eyebrow">Argent virtuel, sensations réelles</div>
+      <h1>Envoyez, recevez,<br><em>vibrez</em> à chaque transfert.</h1>
+      <p>Un compte, un solde fictif, des virements instantanés entre amis. KykyPay simule l'expérience d'un vrai néo-compte — sans jamais toucher un centime réel.</p>
+    </div>
+
+    <div class="hero-card-wrap">
+      <div class="hero-card" id="heroCard">
+        <div class="row-top">
+          <div class="brand-mini">KykyPay</div>
+          <div class="chip"></div>
+        </div>
+        <div class="num">•••• •••• •••• 8842</div>
+        <div class="row-bottom">
+          <div>
+            <div class="holder">Titulaire</div>
+            <div class="holder-name">Votre nom ici</div>
+          </div>
+          <div class="card-balance">Solde virtuel</div>
+        </div>
+      </div>
+      <div class="hero-ticker"><span class="dot"></span> Virements simulés en temps réel</div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Connexion</button>
+        <button class="auth-tab" id="tabSignup">Créer un compte</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm">
+        <div class="auth-title">Content de vous revoir 👋</div>
+        <div class="auth-sub">Connectez-vous pour accéder à votre solde.</div>
+        <div class="auth-error" id="loginError"></div>
+        <form id="loginFormEl" autocomplete="on">
+          <div class="field">
+            <label>Adresse email</label>
+            <input class="input" type="email" id="loginEmail" placeholder="vous@exemple.com" required autocomplete="username">
+          </div>
+          <div class="field">
+            <label>Mot de passe</label>
+            <div class="pw-wrap">
+              <input class="input" type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="pw-toggle" data-target="loginPassword">Afficher</button>
+            </div>
+          </div>
+          <button class="btn-primary" type="submit" id="loginBtn"><span class="txt">Se connecter</span><span class="spin"><div class="spinner"></div></span></button>
+        </form>
+        <div class="auth-foot">Pas encore de compte ? <a href="#" id="goSignup" style="color:var(--gold); font-weight:600;">Inscrivez-vous</a></div>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="signupForm" class="hidden">
+        <div class="auth-title">Bienvenue sur KykyPay 🚀</div>
+        <div class="auth-sub">Créez votre compte et recevez 1 000 K offerts.</div>
+        <div class="auth-error" id="signupError"></div>
+        <form id="signupFormEl" autocomplete="on">
+          <div class="avatar-picker">
+            <div class="avatar-preview" id="avatarPreview">?</div>
+            <label class="file-btn">Choisir une photo<input type="file" id="photoInput" accept="image/*"></label>
+          </div>
+          <div class="field">
+            <div class="row2">
+              <div><label>Prénom</label><input class="input" type="text" id="signupPrenom" placeholder="Kyky" required></div>
+              <div><label>Nom</label><input class="input" type="text" id="signupNom" placeholder="Dupont" required></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Adresse email</label>
+            <input class="input" type="email" id="signupEmail" placeholder="vous@exemple.com" required autocomplete="username">
+          </div>
+          <div class="field">
+            <label>Mot de passe</label>
+            <div class="pw-wrap">
+              <input class="input" type="password" id="signupPassword" placeholder="6 caractères minimum" required autocomplete="new-password">
+              <button type="button" class="pw-toggle" data-target="signupPassword">Afficher</button>
+            </div>
+          </div>
+          <button class="btn-primary" type="submit" id="signupBtn"><span class="txt">Créer mon compte</span><span class="spin"><div class="spinner"></div></span></button>
+        </form>
+        <div class="auth-foot">Déjà inscrit ? <a href="#" id="goLogin" style="color:var(--gold); font-weight:600;">Connectez-vous</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP SCREEN ================= -->
+<div id="appScreen" class="hidden">
+  <div class="topbar">
+    <div class="brand"><div class="mark">K</div><span>KykyPay</span></div>
+    <div class="topbar-right">
+      <div class="profile-chip" id="profileChip">
+        <div class="chip-avatar" id="chipAvatar">?</div>
+        <div class="pname" id="chipName">—</div>
+        <div class="profile-menu" id="profileMenu">
+          <div class="pm-head">
+            <div class="n" id="pmName">—</div>
+            <div class="e" id="pmEmail">—</div>
+          </div>
+          <button class="pm-item" id="pmRefresh">↻ Actualiser</button>
+          <button class="pm-item danger" id="pmLogout">⎋ Se déconnecter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card-panel">
+      <div class="balance-card" id="balanceCard">
+        <div class="row-top">
+          <div class="brand-mini">KykyPay</div>
+          <div class="num" id="cardNumber">•••• •••• •••• ••••</div>
+        </div>
+        <div class="amount-block">
+          <div class="amount-label">Solde disponible</div>
+          <div class="amount" id="balanceAmount">0,00 K</div>
+        </div>
+        <div class="row-bottom">
+          <div class="holder-name" id="cardHolder">—</div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="qa-btn send" id="openSendModal">
+          <div class="ic">↗</div>Envoyer
+        </button>
+        <button class="qa-btn req" id="openRequestInfo">
+          <div class="ic">↙</div>Recevoir
+        </button>
+      </div>
+
+      <div class="mini-note">💡 Astuce : partagez votre email KykyPay avec un ami pour qu'il puisse vous envoyer de l'argent virtuel instantanément.</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Historique des transactions</h2>
+        <div class="sub" id="txCount">0 mouvement</div>
+      </div>
+      <div class="tx-list" id="txList">
+        <div class="empty-state">
+          <div class="es-ic">🧾</div>
+          <div class="es-t">Aucune transaction pour l'instant</div>
+          <div class="es-s">Envoyez votre premier virement pour voir apparaître l'historique ici.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SEND MODAL ================= -->
+<div class="modal-backdrop" id="sendModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Envoyer de l'argent</h3>
+      <button class="modal-close" id="closeSendModal">✕</button>
+    </div>
+    <div class="auth-error" id="sendError"></div>
+    <form id="sendForm">
+      <div class="field">
+        <label>Email du destinataire</label>
+        <input class="input" type="email" id="sendToEmail" placeholder="ami@exemple.com" required>
+        <div class="recipient-preview" id="recipientPreview">
+          <div class="rp-av" id="rpAv">?</div>
+          <div><strong id="rpName">—</strong></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Montant</label>
+        <div class="amount-input-wrap">
+          <span class="cur">K</span>
+          <input class="input" type="number" id="sendAmount" placeholder="0.00" min="0.01" step="0.01" required>
+        </div>
+        <div class="balance-hint">Solde disponible : <span id="sendBalanceHint">0,00 K</span></div>
+      </div>
+      <div class="field">
+        <label>Message (optionnel)</label>
+        <input class="input" type="text" id="sendMessage" placeholder="Pour le resto d'hier 🍕" maxlength="80">
+      </div>
+      <button class="btn-primary" type="submit" id="sendBtn"><span class="txt">Envoyer le virement</span><span class="spin"><div class="spinner"></div></span></button>
+    </form>
+  </div>
+</div>
+
+<!-- ================= RECEIVE INFO MODAL ================= -->
+<div class="modal-backdrop" id="recvModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Recevoir de l'argent</h3>
+      <button class="modal-close" id="closeRecvModal">✕</button>
+    </div>
+    <p style="font-size:13.5px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">Communiquez votre email KykyPay à un ami : il pourra vous envoyer de l'argent virtuel instantanément depuis son propre compte.</p>
+    <div class="field">
+      <label>Votre email KykyPay</label>
+      <input class="input" type="text" id="myEmailField" readonly style="cursor:pointer;">
+    </div>
+    <button class="btn-primary" type="button" id="copyEmailBtn"><span class="txt">Copier mon email</span></button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+/* ============================================================
+   KykyPay — logique application
+   Toutes les données vivent sous le noeud racine "kykypay/"
+   ============================================================ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBPq6Wfxzq02MfK69BFxHm9_FUjDGTmAcw",
+  authDomain: "kykychat-24c7f.firebaseapp.com",
+  databaseURL: "https://kykychat-24c7f-default-rtdb.firebaseio.com",
+  projectId: "kykychat-24c7f",
+  storageBucket: "kykychat-24c7f.firebasestorage.app",
+  messagingSenderId: "342562811927",
+  appId: "1:342562811927:web:0fed1e1f511c4fddcfec52"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const ROOT = "kykypay";
+const STARTING_BALANCE = 1000;
+
+/* ---------------- Utilitaires ---------------- */
+const $ = (id) => document.getElementById(id);
+
+function formatMoney(n){
+  const num = Number(n) || 0;
+  return new Intl.NumberFormat('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}).format(num) + " K";
+}
+function initials(prenom, nom){
+  return ((prenom?.[0]||"") + (nom?.[0]||"")).toUpperCase() || "?";
+}
+function fakeCardNumber(uid){
+  let h = 0;
+  for (let i=0;i<uid.length;i++){ h = (h*31 + uid.charCodeAt(i)) >>> 0; }
+  const s = String(h).padStart(12,"7").slice(0,12);
+  return "•••• •••• " + s.slice(4,8) + " " + s.slice(8,12);
+}
+function fmtDate(ts){
+  const d = new Date(ts);
+  const today = new Date();
+  const sameDay = d.toDateString() === today.toDateString();
+  const time = d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  if (sameDay) return "Aujourd'hui, " + time;
+  return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'short'}) + ", " + time;
+}
+
+function showToast(type, title, sub){
+  const wrap = $('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<div class="t-ic">${type==='success'?'✓':'!'}</div><div><div class="t-title">${title}</div>${sub?`<div class="t-sub">${sub}</div>`:''}</div>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(), 300); }, 4200);
+}
+
+/* ---------------- Sons (Web Audio API, générés, pas de fichiers externes) ---------------- */
+let actx;
+function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function tone(freq, start, dur, type='sine', gainVal=0.18){
+  const c = ctx();
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, c.currentTime+start);
+  gain.gain.linearRampToValueAtTime(gainVal, c.currentTime+start+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+start+dur);
+  osc.connect(gain); gain.connect(c.destination);
+  osc.start(c.currentTime+start); osc.stop(c.currentTime+start+dur+0.05);
+}
+function playReceiveSound(){
+  // petit arpège ascendant, "cha-ching"
+  tone(660, 0, 0.16, 'triangle', 0.16);
+  tone(880, 0.09, 0.16, 'triangle', 0.16);
+  tone(1320, 0.18, 0.30, 'triangle', 0.20);
+}
+function playSendSound(){
+  tone(520, 0, 0.10, 'sine', 0.14);
+  tone(360, 0.08, 0.16, 'sine', 0.12);
+}
+function playErrorSound(){
+  tone(180, 0, 0.18, 'sawtooth', 0.10);
+}
+
+/* ---------------- Etat global ---------------- */
+let currentUser = null;
+let currentProfile = null;
+let knownTxIds = new Set();
+let listenersAttached = false;
+
+/* ---------------- Navigation Auth (tabs) ---------------- */
+$('tabLogin').addEventListener('click', ()=>switchAuthTab('login'));
+$('tabSignup').addEventListener('click', ()=>switchAuthTab('signup'));
+$('goSignup').addEventListener('click', (e)=>{e.preventDefault(); switchAuthTab('signup');});
+$('goLogin').addEventListener('click', (e)=>{e.preventDefault(); switchAuthTab('login');});
+function switchAuthTab(which){
+  const isLogin = which==='login';
+  $('tabLogin').classList.toggle('active', isLogin);
+  $('tabSignup').classList.toggle('active', !isLogin);
+  $('loginForm').classList.toggle('hidden', !isLogin);
+  $('signupForm').classList.toggle('hidden', isLogin);
+}
+
+document.querySelectorAll('.pw-toggle').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = $(btn.dataset.target);
+    const show = target.type === 'password';
+    target.type = show ? 'text' : 'password';
+    btn.textContent = show ? 'Masquer' : 'Afficher';
+  });
+});
+
+/* ---------------- Photo de profil -> base64 (redimensionnée) ---------------- */
+let pendingPhotoB64 = null;
+$('photoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const size = 240;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const cctx = canvas.getContext('2d');
+      const scale = Math.max(size/img.width, size/img.height);
+      const w = img.width*scale, h = img.height*scale;
+      cctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+      pendingPhotoB64 = canvas.toDataURL('image/jpeg', 0.82);
+      $('avatarPreview').innerHTML = `<img src="${pendingPhotoB64}">`;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---------------- Inscription ---------------- */
+$('signupFormEl').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const errEl = $('signupError'); errEl.classList.remove('show');
+  const prenom = $('signupPrenom').value.trim();
+  const nom = $('signupNom').value.trim();
+  const email = $('signupEmail').value.trim();
+  const password = $('signupPassword').value;
+
+  if (password.length < 6){
+    errEl.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+    errEl.classList.add('show');
+    return;
+  }
+
+  setLoading('signupBtn', true);
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+    const profile = {
+      prenom, nom, email,
+      photoB64: pendingPhotoB64 || null,
+      solde: STARTING_BALANCE,
+      createdAt: Date.now()
+    };
+    await db.ref(`${ROOT}/users/${uid}`).set(profile);
+    showToast('success', 'Compte créé', `Bienvenue ${prenom} ! 1 000 K ont été crédités.`);
+  }catch(err){
+    errEl.textContent = translateAuthError(err);
+    errEl.classList.add('show');
+    setLoading('signupBtn', false);
+  }
+});
+
+/* ---------------- Connexion ---------------- */
+$('loginFormEl').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const errEl = $('loginError'); errEl.classList.remove('show');
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  setLoading('loginBtn', true);
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+  }catch(err){
+    errEl.textContent = translateAuthError(err);
+    errEl.classList.add('show');
+    setLoading('loginBtn', false);
+  }
+});
+
+function translateAuthError(err){
+  const map = {
+    'auth/email-already-in-use':"Cette adresse email est déjà utilisée.",
+    'auth/invalid-email':"Adresse email invalide.",
+    'auth/weak-password':"Mot de passe trop faible (6 caractères minimum).",
+    'auth/user-not-found':"Aucun compte ne correspond à cet email.",
+    'auth/wrong-password':"Mot de passe incorrect.",
+    'auth/invalid-credential':"Email ou mot de passe incorrect.",
+    'auth/too-many-requests':"Trop de tentatives. Réessayez plus tard."
+  };
+  return map[err.code] || "Une erreur est survenue. Réessayez.";
+}
+
+function setLoading(btnId, loading){
+  const btn = $(btnId);
+  btn.classList.toggle('loading', loading);
+  btn.disabled = loading;
+}
+
+/* ---------------- Etat d'authentification ---------------- */
+auth.onAuthStateChanged(async (user)=>{
+  $('bootLoader').classList.add('hidden');
+  if (user){
+    currentUser = user;
+    const snap = await db.ref(`${ROOT}/users/${user.uid}`).once('value');
+    currentProfile = snap.val();
+    if (!currentProfile){
+      // sécurité : profil manquant, on déconnecte
+      await auth.signOut();
+      return;
+    }
+    $('authScreen').classList.add('hidden');
+    $('appScreen').classList.remove('hidden');
+    renderProfile();
+    if (!listenersAttached){ attachRealtimeListeners(); listenersAttached = true; }
+  } else {
+    currentUser = null; currentProfile = null; knownTxIds = new Set(); listenersAttached = false;
+    $('appScreen').classList.add('hidden');
+    $('authScreen').classList.remove('hidden');
+    ['loginFormEl','signupFormEl'].forEach(id=>$(id).reset());
+    setLoading('loginBtn', false); setLoading('signupBtn', false);
+  }
+});
+
+/* ---------------- Rendu profil / carte ---------------- */
+function renderProfile(){
+  const p = currentProfile;
+  const fullName = `${p.prenom} ${p.nom}`;
+  $('chipName').textContent = p.prenom;
+  $('pmName').textContent = fullName;
+  $('pmEmail').textContent = p.email;
+  $('cardHolder').textContent = fullName.toUpperCase();
+  $('cardNumber').textContent = fakeCardNumber(currentUser.uid);
+  $('myEmailField').value = p.email;
+
+  const avatarHtml = p.photoB64 ? `<img src="${p.photoB64}">` : initials(p.prenom, p.nom);
+  $('chipAvatar').innerHTML = avatarHtml;
+}
+
+/* ---------------- Profile menu dropdown ---------------- */
+$('profileChip').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  $('profileMenu').classList.toggle('open');
+});
+document.addEventListener('click', ()=> $('profileMenu').classList.remove('open'));
+$('pmLogout').addEventListener('click', ()=> auth.signOut());
+$('pmRefresh').addEventListener('click', async ()=>{
+  const snap = await db.ref(`${ROOT}/users/${currentUser.uid}`).once('value');
+  currentProfile = snap.val();
+  renderProfile();
+  showToast('success','Profil actualisé');
+});
+
+/* ---------------- Carte : effet tilt souris ---------------- */
+const bCard = $('balanceCard');
+bCard.addEventListener('mousemove', (e)=>{
+  const r = bCard.getBoundingClientRect();
+  const x = (e.clientX - r.left)/r.width - 0.5;
+  const y = (e.clientY - r.top)/r.height - 0.5;
+  bCard.style.transform = `rotateX(${-y*8}deg) rotateY(${x*12}deg)`;
+});
+bCard.addEventListener('mouseleave', ()=>{ bCard.style.transform = 'rotateX(0) rotateY(0)'; });
+
+/* ---------------- Balance display avec animation ---------------- */
+let lastDisplayedBalance = null;
+function animateBalance(target){
+  const el = $('balanceAmount');
+  const start = lastDisplayedBalance ?? target;
+  const dur = 500; const t0 = performance.now();
+  function step(t){
+    const p = Math.min(1, (t-t0)/dur);
+    const eased = 1 - Math.pow(1-p, 3);
+    const val = start + (target-start)*eased;
+    el.textContent = formatMoney(val);
+    if (p<1) requestAnimationFrame(step); else lastDisplayedBalance = target;
+  }
+  requestAnimationFrame(step);
+  $('sendBalanceHint').textContent = formatMoney(target);
+}
+
+/* ---------------- Listeners temps réel ---------------- */
+function attachRealtimeListeners(){
+  const uid = currentUser.uid;
+
+  // Solde en direct
+  db.ref(`${ROOT}/users/${uid}/solde`).on('value', (snap)=>{
+    animateBalance(snap.val() || 0);
+  });
+
+  // Historique complet (fusion envoyés + reçus)
+  const refreshHistory = debounce(loadTransactionHistory, 150);
+
+  const qTo = db.ref(`${ROOT}/transactions`).orderByChild('toUid').equalTo(uid);
+  const qFrom = db.ref(`${ROOT}/transactions`).orderByChild('fromUid').equalTo(uid);
+
+  // Chargement initial pour connaître les IDs déjà existants (évite de jouer le son au login)
+  Promise.all([qTo.once('value'), qFrom.once('value')]).then(([sTo, sFrom])=>{
+    sTo.forEach(c=>knownTxIds.add(c.key));
+    sFrom.forEach(c=>knownTxIds.add(c.key));
+    loadTransactionHistory();
+
+    qTo.on('child_added', (snap)=>{
+      if (!knownTxIds.has(snap.key)){
+        knownTxIds.add(snap.key);
+        const tx = snap.val();
+        playReceiveSound();
+        showToast('success', `💸 ${tx.fromNom} vous a envoyé ${formatMoney(tx.amount)}`, tx.message || '');
+      }
+      refreshHistory();
+    });
+    qFrom.on('child_added', (snap)=>{
+      if (!knownTxIds.has(snap.key)){ knownTxIds.add(snap.key); }
+      refreshHistory();
+    });
+  });
+}
+
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+async function loadTransactionHistory(){
+  const uid = currentUser.uid;
+  const [sTo, sFrom] = await Promise.all([
+    db.ref(`${ROOT}/transactions`).orderByChild('toUid').equalTo(uid).once('value'),
+    db.ref(`${ROOT}/transactions`).orderByChild('fromUid').equalTo(uid).once('value')
+  ]);
+  const map = new Map();
+  sTo.forEach(c=>map.set(c.key, c.val()));
+  sFrom.forEach(c=>map.set(c.key, c.val()));
+  const list = Array.from(map.values()).sort((a,b)=>b.date-a.date);
+  renderTransactionList(list, uid);
+}
+
+function renderTransactionList(list, uid){
+  $('txCount').textContent = `${list.length} mouvement${list.length>1?'s':''}`;
+  const container = $('txList');
+  if (list.length === 0){
+    container.innerHTML = `<div class="empty-state"><div class="es-ic">🧾</div><div class="es-t">Aucune transaction pour l'instant</div><div class="es-s">Envoyez votre premier virement pour voir apparaître l'historique ici.</div></div>`;
+    return;
+  }
+  container.innerHTML = list.map(tx=>{
+    const received = tx.toUid === uid;
+    const other = received ? tx.fromNom : tx.toNom;
+    const label = received ? `Reçu de ${other}` : `Envoyé à ${other}`;
+    const sign = received ? '+' : '−';
+    const cls = received ? 'pos' : 'neg';
+    const av = initials(...(other||' ').split(' '));
+    return `<div class="tx-row">
+      <div class="tx-avatar">${av}</div>
+      <div class="tx-mid">
+        <div class="t1">${label}</div>
+        <div class="t2">${tx.message ? tx.message + ' · ' : ''}${fmtDate(tx.date)}</div>
+      </div>
+      <div class="tx-amount ${cls}">${sign} ${formatMoney(tx.amount).replace('K','K').trim()}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- Modal : Envoyer ---------------- */
+$('openSendModal').addEventListener('click', ()=>{
+  $('sendForm').reset();
+  $('sendError').classList.remove('show');
+  $('recipientPreview').classList.remove('show');
+  $('sendBalanceHint').textContent = formatMoney(currentProfile.solde || 0);
+  $('sendModalBackdrop').classList.add('open');
+});
+$('closeSendModal').addEventListener('click', ()=> $('sendModalBackdrop').classList.remove('open'));
+$('sendModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='sendModalBackdrop') $('sendModalBackdrop').classList.remove('open'); });
+
+let recipientLookupTimer;
+$('sendToEmail').addEventListener('input', ()=>{
+  clearTimeout(recipientLookupTimer);
+  const email = $('sendToEmail').value.trim();
+  if (!email){ $('recipientPreview').classList.remove('show'); return; }
+  recipientLookupTimer = setTimeout(async ()=>{
+    const snap = await db.ref(`${ROOT}/users`).orderByChild('email').equalTo(email).once('value');
+    if (snap.exists()){
+      const data = Object.values(snap.val())[0];
+      $('rpName').textContent = `${data.prenom} ${data.nom}`;
+      $('rpAv').innerHTML = data.photoB64 ? `<img src="${data.photoB64}">` : initials(data.prenom, data.nom);
+      $('recipientPreview').classList.add('show');
+    } else {
+      $('recipientPreview').classList.remove('show');
+    }
+  }, 400);
+});
+
+$('sendForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const errEl = $('sendError'); errEl.classList.remove('show');
+  const toEmail = $('sendToEmail').value.trim();
+  const amount = parseFloat($('sendAmount').value);
+  const message = $('sendMessage').value.trim();
+
+  if (toEmail === currentProfile.email){
+    errEl.textContent = "Vous ne pouvez pas vous envoyer de l'argent à vous-même."; errEl.classList.add('show'); return;
+  }
+  if (!(amount > 0)){
+    errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return;
+  }
+
+  setLoading('sendBtn', true);
+  try{
+    const snap = await db.ref(`${ROOT}/users`).orderByChild('email').equalTo(toEmail).once('value');
+    if (!snap.exists()){
+      throw {custom:"Aucun utilisateur KykyPay ne possède cet email."};
+    }
+    const toUid = Object.keys(snap.val())[0];
+    const toProfile = Object.values(snap.val())[0];
+
+    // Débit atomique de l'expéditeur (transaction Firebase => évite les soldes négatifs en cas de concurrence)
+    const senderRef = db.ref(`${ROOT}/users/${currentUser.uid}/solde`);
+    const result = await senderRef.transaction((current)=>{
+      const cur = current || 0;
+      if (cur < amount) return; // abort -> insufficient funds
+      return Math.round((cur - amount) * 100) / 100;
+    });
+
+    if (!result.committed){
+      throw {custom:"Solde insuffisant pour ce virement."};
+    }
+
+    // Crédit du destinataire
+    await db.ref(`${ROOT}/users/${toUid}/solde`).transaction((current)=> Math.round(((current||0) + amount) * 100) / 100);
+
+    // Enregistrement de la transaction
+    const txId = db.ref(`${ROOT}/transactions`).push().key;
+    await db.ref(`${ROOT}/transactions/${txId}`).set({
+      fromUid: currentUser.uid,
+      toUid: toUid,
+      fromEmail: currentProfile.email,
+      toEmail: toEmail,
+      fromNom: `${currentProfile.prenom} ${currentProfile.nom}`,
+      toNom: `${toProfile.prenom} ${toProfile.nom}`,
+      amount: amount,
+      message: message || null,
+      date: Date.now()
+    });
+
+    currentProfile.solde = result.snapshot.val();
+    playSendSound();
+    showToast('success', 'Virement envoyé', `${formatMoney(amount)} envoyés à ${toProfile.prenom}.`);
+    $('sendModalBackdrop').classList.remove('open');
+  }catch(err){
+    playErrorSound();
+    errEl.textContent = err.custom || "Une erreur est survenue lors du virement.";
+    errEl.classList.add('show');
+  }finally{
+    setLoading('sendBtn', false);
+  }
+});
+
+/* ---------------- Modal : Recevoir ---------------- */
+$('openRequestInfo').addEventListener('click', ()=> $('recvModalBackdrop').classList.add('open'));
+$('closeRecvModal').addEventListener('click', ()=> $('recvModalBackdrop').classList.remove('open'));
+$('recvModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='recvModalBackdrop') $('recvModalBackdrop').classList.remove('open'); });
+$('copyEmailBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(currentProfile.email);
+  showToast('success', 'Email copié', 'Partagez-le avec vos amis KykyPay.');
+});
+
+/* ---------------- Débloquer l'audio au premier clic (politique navigateurs) ---------------- */
+document.addEventListener('click', function unlockAudio(){
+  try{ ctx().resume(); }catch(e){}
+  document.removeEventListener('click', unlockAudio);
+}, {once:true});
+</script>
+</body>
+</html>
