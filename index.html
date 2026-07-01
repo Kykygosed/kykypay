@@ -1267,13 +1267,22 @@ function renderStats(list, uid){
 }
 
 function renderTransactionList(list, uid){
+
   $('txCount').textContent = `${lastTxList.length} mouvement${lastTxList.length>1?'s':''}`;
+
   const container = $('txList');
+
   if (list.length === 0){
+
     const noResults = lastTxList.length > 0;
-    container.innerHTML = `<div class="empty-state"><div class="es-ic">${noResults?'🔍':'🧾'}</div><div class="es-t">${noResults?'Aucun résultat':'Aucune transaction pour l\\'instant'}</div><div class="es-s">${noResults?'Essayez une autre recherche.':'Envoyez votre premier virement pour voir apparaître l\\'historique ici.'}</div></div>`};
+
+    container.innerHTML = `<div class="empty-state"><div class="es-ic">${noResults?'🔍':'🧾'}</div><div class="es-t">${noResults?'Aucun résultat':'Aucune transaction pour l\\'instant'}</div><div class="es-s">${noResults?'Essayez une autre recherche.':'Envoyez votre premier virement pour voir apparaître l\\'historique ici.'}</div></div>`;
+
     return;
+
   }
+
+} // <-- fermeture de la fonction
   container.innerHTML = list.map(tx=>{
     const received = tx.toUid === uid;
     const other = received ? tx.fromNom : tx.toNom;
