@@ -1589,29 +1589,54 @@ async function refreshRequestsList(){
 
 async function handleRequestAction(reqId, action, reqData){
   if (!reqData) return;
+
   if (action === 'decline'){
     await db.ref(`${ROOT}/requests/${reqId}/status`).set('declined');
     showToast('success', 'Demande refusée');
     return;
   }
+
   // accept -> je (toUid) envoie l'argent au demandeur (fromUid)
   try{
-    const {newBalance} = await performTransfer(currentUser.uid, currentProfile, reqData.fromEmail, reqData.amount, reqData.message);
+    const { newBalance } = await performTransfer(
+      currentUser.uid,
+      currentProfile,
+      reqData.fromEmail,
+      reqData.amount,
+      reqData.message
+    );
+
     currentProfile.solde = newBalance;
+
     await db.ref(`${ROOT}/requests/${reqId}/status`).set('accepted');
+
     playSendSound();
-    showToast('success', 'Demande acceptée', `${formatMoney(reqData.amount)} envoyés à ${reqData.fromNom}.`);
-  }catch(err){
+
+    showToast(
+      'success',
+      'Demande acceptée',
+      `${formatMoney(reqData.amount)} envoyés à ${reqData.fromNom}.`
+    );
+
+  } catch (err) {
+
     playErrorSound();
-    showToast('error', 'Impossible d\\'accepter', err.custom || 'Solde insuffisant.');
+
+    showToast(
+      'error',
+      "Impossible d'accepter",
+      err.custom || 'Solde insuffisant.'
+    );
   }
 }
 
 /* ---------------- Débloquer l'audio au premier clic (politique navigateurs) ---------------- */
-document.addEventListener('click', function unlockAudio(){
-  try{ ctx().resume(); }catch(e){}
+document.addEventListener('click', function unlockAudio() {
+  try {
+    ctx().resume();
+  } catch (e) {}
+
   document.removeEventListener('click', unlockAudio);
-}, {once:true});
-</script>
-</body>
+
+}, { once: true });
 </html>
