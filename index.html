@@ -1280,38 +1280,40 @@ function renderTransactionList(list, uid) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="es-ic">${noResults ? '🔍' : '🧾'}</div>
-        <div class="es-t">
-          ${noResults ? 'Aucun résultat' : "Aucune transaction pour l'instant"}
-        </div>
-        <div class="es-s">
-          ${noResults
-            ? 'Essayez une autre recherche.'
-            : "Envoyez votre premier virement pour voir apparaître l'historique ici."}
-        </div>
+        <div class="es-t">${noResults ? 'Aucun résultat' : "Aucune transaction pour l'instant"}</div>
+        <div class="es-s">${noResults ? 'Essayez une autre recherche.' : "Envoyez votre premier virement pour voir apparaître l'historique ici."}</div>
       </div>
     `;
 
     return;
   }
 
-  // Le reste de ton code pour afficher les transactions...
-}
-  container.innerHTML = list.map(tx=>{
+  container.innerHTML = list.map(tx => {
     const received = tx.toUid === uid;
     const other = received ? tx.fromNom : tx.toNom;
-    const label = received ? `Reçu de ${escapeHtml(other)}` : `Envoyé à ${escapeHtml(other)}`;
+    const label = received
+      ? `Reçu de ${escapeHtml(other)}`
+      : `Envoyé à ${escapeHtml(other)}`;
     const sign = received ? '+' : '−';
     const cls = received ? 'pos' : 'neg';
-    const av = initials(...(other||' ').split(' '));
-    return `<div class="tx-row">
-      <div class="tx-avatar">${av}</div>
-      <div class="tx-mid">
-        <div class="t1">${label}</div>
-        <div class="t2">${tx.message ? escapeHtml(tx.message) + ' · ' : ''}${fmtDate(tx.date)}</div>
+    const av = initials(...(other || ' ').split(' '));
+
+    return `
+      <div class="tx-row">
+        <div class="tx-avatar">${av}</div>
+        <div class="tx-mid">
+          <div class="t1">${label}</div>
+          <div class="t2">
+            ${tx.message ? escapeHtml(tx.message) + ' · ' : ''}${fmtDate(tx.date)}
+          </div>
+        </div>
+        <div class="tx-amount ${cls}">
+          ${sign} ${formatMoney(tx.amount).trim()}
+        </div>
       </div>
-      <div class="tx-amount ${cls}">${sign} ${formatMoney(tx.amount).replace('K','K').trim()}</div>
-    </div>`;
+    `;
   }).join('');
+
 }
 
 /* ---------------- Export CSV ---------------- */
