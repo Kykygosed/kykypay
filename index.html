@@ -49,7 +49,7 @@ h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
 ::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:8px;}
 a{color:inherit;}
 button{font-family:inherit; cursor:pointer;}
-input{font-family:inherit;}
+input,select,textarea{font-family:inherit;}
 .hidden{display:none !important;}
 
 /* ---------- Loader ---------- */
@@ -104,7 +104,6 @@ input{font-family:inherit;}
 .hero-copy h1 em{font-style:normal; color:var(--gold);}
 .hero-copy p{color:var(--text-muted); font-size:15.5px; line-height:1.6;}
 
-/* signature: floating virtual card */
 .hero-card-wrap{z-index:1; perspective:1000px; margin-top:40px;}
 .hero-card{
   width:360px; max-width:100%; aspect-ratio:1.586; border-radius:20px; position:relative;
@@ -138,10 +137,7 @@ input{font-family:inherit;}
 .hero-ticker .dot{width:6px; height:6px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); animation:blink 1.6s infinite;}
 @keyframes blink{50%{opacity:0.3;}}
 
-/* ---- auth form panel ---- */
-.auth-panel{
-  display:flex; align-items:center; justify-content:center; padding:40px 24px;
-}
+.auth-panel{display:flex; align-items:center; justify-content:center; padding:40px 24px;}
 .auth-box{width:100%; max-width:400px;}
 .auth-tabs{display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); padding:4px; border-radius:12px; margin-bottom:28px;}
 .auth-tab{flex:1; text-align:center; padding:9px 0; border:none; background:transparent; color:var(--text-muted); border-radius:8px; font-weight:600; font-size:13.5px; transition:all .2s;}
@@ -153,7 +149,7 @@ input{font-family:inherit;}
 .field{margin-bottom:16px;}
 .field label{display:block; font-size:12.5px; color:var(--text-muted); margin-bottom:7px; font-weight:500;}
 .field .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-.input, .field input{
+.input, .field input, select.input{
   width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text);
   padding:12px 14px; border-radius:11px; font-size:14px; outline:none; transition:border-color .15s, background .15s;
 }
@@ -178,6 +174,7 @@ input{font-family:inherit;}
   width:100%; padding:13px 0; border:none; border-radius:12px; font-weight:700; font-size:14.5px;
   background:linear-gradient(150deg, var(--gold-soft), var(--gold-dim)); color:#0A0D14;
   transition:transform .12s, box-shadow .12s; box-shadow:0 8px 24px -10px rgba(242,184,75,0.5);
+  position:relative;
 }
 .btn-primary:hover{transform:translateY(-1px); box-shadow:0 12px 28px -8px rgba(242,184,75,0.6);}
 .btn-primary:active{transform:translateY(0);}
@@ -185,13 +182,28 @@ input{font-family:inherit;}
 .btn-primary .spin{display:none;}
 .btn-primary.loading .txt{visibility:hidden;}
 .btn-primary.loading .spin{display:block; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);}
-.btn-primary{position:relative;}
+
+.btn-secondary{
+  width:100%; padding:11px 0; border:1px solid var(--border); border-radius:12px; font-weight:700; font-size:13.5px;
+  background:var(--surface); color:var(--text); transition:border-color .15s;
+}
+.btn-secondary:hover{border-color:var(--gold-dim); color:var(--gold-soft);}
+.btn-small{padding:7px 12px; border-radius:9px; font-size:12px; font-weight:700; border:none;}
+.btn-small.gold{background:var(--gold-dim); color:#0A0D14;}
+.btn-small.ghost{background:var(--surface-3); color:var(--text-muted);}
+.btn-small.ghost:hover{color:var(--text);}
+.btn-small.danger{background:rgba(255,92,108,0.15); color:#ff8f97;}
 
 .auth-error{
   background:rgba(255,92,108,0.1); border:1px solid rgba(255,92,108,0.3); color:#ffb3ba;
   font-size:12.5px; padding:10px 12px; border-radius:10px; margin-bottom:16px; display:none;
 }
 .auth-error.show{display:block;}
+.auth-note{
+  background:rgba(242,184,75,0.08); border:1px solid rgba(242,184,75,0.25); color:var(--gold-soft);
+  font-size:12px; padding:10px 12px; border-radius:10px; margin-bottom:16px; display:none; line-height:1.5;
+}
+.auth-note.show{display:block;}
 .auth-foot{text-align:center; margin-top:22px; font-size:12.5px; color:var(--text-dim);}
 
 /* ================= APP SCREEN ================= */
@@ -213,18 +225,20 @@ input{font-family:inherit;}
 .profile-chip .pname{font-size:13px; font-weight:600;}
 
 .profile-menu{
-  position:absolute; top:calc(100% + 10px); right:0; width:240px; background:var(--surface-2); border:1px solid var(--border);
+  position:absolute; top:calc(100% + 10px); right:0; width:250px; background:var(--surface-2); border:1px solid var(--border);
   border-radius:14px; padding:8px; box-shadow:var(--shadow-lg); display:none; z-index:60;
 }
 .profile-menu.open{display:block;}
 .profile-menu .pm-head{padding:10px 10px 12px; border-bottom:1px solid var(--border-soft); margin-bottom:6px;}
-.profile-menu .pm-head .n{font-weight:700; font-size:13.5px;}
+.profile-menu .pm-head .n{font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:6px;}
 .profile-menu .pm-head .p{font-size:11.5px; color:var(--gold-soft); margin-top:1px; font-weight:600;}
 .profile-menu .pm-head .e{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+.biz-badge{background:rgba(242,184,75,0.15); color:var(--gold-soft); font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:6px; letter-spacing:0.04em;}
 .pm-item{width:100%; text-align:left; background:none; border:none; color:var(--text-muted); padding:9px 10px; border-radius:9px; font-size:13px; display:flex; align-items:center; gap:9px;}
 .pm-item:hover{background:var(--surface-3); color:var(--text);}
 .pm-item.danger{color:#ff8f97;}
 .pm-item.danger:hover{background:rgba(255,92,108,0.1);}
+.pm-item.admin{color:var(--gold-soft);}
 
 .switch-row{display:flex; align-items:center; justify-content:space-between; padding:9px 10px; border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft); margin:4px 0;}
 .switch-row .sl{font-size:12.5px; color:var(--text-muted);}
@@ -238,7 +252,6 @@ input{font-family:inherit;}
 .main{flex:1; width:100%; max-width:1080px; margin:0 auto; padding:34px 24px 80px; display:grid; grid-template-columns:400px 1fr; gap:26px; align-items:start;}
 @media (max-width:860px){ .main{grid-template-columns:1fr;} }
 
-/* ---- balance card ---- */
 .card-panel{position:sticky; top:88px;}
 .balance-card{
   border-radius:24px; padding:28px; color:#fff; position:relative; overflow:hidden;
@@ -247,19 +260,26 @@ input{font-family:inherit;}
   transform-style:preserve-3d; transition:transform .12s ease;
   aspect-ratio:1.586/1; display:flex; flex-direction:column; justify-content:space-between;
 }
+.balance-card.biz{border-color:rgba(242,184,75,0.35);}
 .balance-card::after{
   content:''; position:absolute; inset:0; opacity:0.45; pointer-events:none;
   background:linear-gradient(115deg, transparent 30%, rgba(242,184,75,0.16) 45%, transparent 60%);
   background-size:220% 220%; animation:sheen 5s ease-in-out infinite;
 }
 .balance-card .row-top{display:flex; justify-content:space-between; align-items:flex-start; z-index:1;}
-.balance-card .brand-mini{font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:var(--gold-soft);}
+.balance-card .brand-mini{font-family:'Space Grotesk'; font-weight:700; font-size:15px; color:var(--gold-soft); display:flex; align-items:center; gap:8px;}
 .balance-card .num{font-family:'JetBrains Mono'; letter-spacing:0.12em; font-size:15px; opacity:0.85; z-index:1;}
 .balance-card .amount-block{z-index:1;}
 .balance-card .amount-label{font-size:11px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.55; margin-bottom:6px;}
-.balance-card .amount{font-family:'JetBrains Mono'; font-size:34px; font-weight:700; letter-spacing:-0.01em;}
+.balance-card .amount{font-family:'JetBrains Mono'; font-size:34px; font-weight:700; letter-spacing:-0.01em; transition:color .2s;}
+.balance-card .amount.negative{color:var(--red);}
 .balance-card .row-bottom{display:flex; justify-content:space-between; align-items:flex-end; z-index:1;}
 .balance-card .holder-name{font-family:'Space Grotesk'; font-weight:600; font-size:13.5px;}
+
+.negative-banner{
+  margin-top:14px; background:rgba(255,92,108,0.1); border:1px solid rgba(255,92,108,0.35); color:#ffb3ba;
+  padding:12px 14px; border-radius:14px; font-size:12.5px; line-height:1.55; font-weight:500;
+}
 
 .quick-actions{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;}
 .qa-btn{
@@ -274,7 +294,6 @@ input{font-family:inherit;}
 
 .mini-note{margin-top:16px; font-size:11.5px; color:var(--text-dim); line-height:1.6; padding:12px 14px; background:var(--surface); border:1px solid var(--border-soft); border-radius:12px;}
 
-/* ---- stats ---- */
 .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;}
 .stat-box{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px;}
 .stat-box .sl{font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
@@ -282,7 +301,6 @@ input{font-family:inherit;}
 .stat-box .sv.pos{color:var(--teal);}
 .stat-box .sv.neg{color:var(--red);}
 
-/* ---- chart ---- */
 .chart-panel{margin-top:20px; padding:22px;}
 .chart-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
 .chart-head h2{font-size:15px; font-weight:700;}
@@ -295,9 +313,7 @@ input{font-family:inherit;}
 .chart-empty{padding:36px 10px; text-align:center; color:var(--text-dim); font-size:12.5px;}
 .chart-pt{transition:r .1s;}
 .chart-pt:hover{r:5;}
-.chart-pt title{font-family:'JetBrains Mono';}
 
-/* ---- panel ---- */
 .panel{background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:22px;}
 .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
 .panel-head h2{font-size:16.5px; font-weight:700; display:flex; align-items:center;}
@@ -327,7 +343,6 @@ input{font-family:inherit;}
 .empty-state .es-t{font-size:13.5px; color:var(--text-muted); font-weight:600; margin-bottom:4px;}
 .empty-state .es-s{font-size:12px;}
 
-/* ---- requests ---- */
 .req-badge{background:var(--red); color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:20px; margin-left:8px;}
 .req-row{display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:14px; border:1px solid var(--border-soft); margin-bottom:8px; background:var(--surface-2);}
 .req-avatar{width:38px; height:38px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; color:var(--gold-soft); flex-shrink:0; overflow:hidden;}
@@ -341,13 +356,30 @@ input{font-family:inherit;}
 .req-btn.decline{background:var(--surface-3); color:var(--text-muted);}
 .req-btn.decline:hover{color:var(--red);}
 
+/* ---- entreprises / dettes ---- */
+.biz-row, .debt-row{display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:14px; border:1px solid var(--border-soft); margin-bottom:8px; background:var(--surface-2);}
+.biz-row .bm, .debt-row .bm{flex:1; min-width:0;}
+.biz-row .bm .t1, .debt-row .bm .t1{font-size:13px; font-weight:600;}
+.biz-row .bm .t2, .debt-row .bm .t2{font-size:11px; color:var(--text-dim); margin-top:3px;}
+.perm-tag{font-size:9.5px; font-weight:700; padding:2px 6px; border-radius:6px; background:var(--surface-3); color:var(--text-muted); margin-right:4px;}
+.debt-amount{font-family:'JetBrains Mono'; font-weight:700; font-size:13.5px; white-space:nowrap;}
+.debt-amount.owe{color:var(--red);}
+.debt-amount.owed{color:var(--teal);}
+
+.employee-row{display:flex; align-items:center; gap:10px; padding:10px; border-radius:12px; background:var(--surface); border:1px solid var(--border-soft); margin-bottom:8px;}
+.employee-row .em{flex:1; min-width:0;}
+.employee-row .em .t1{font-size:12.5px; font-weight:600;}
+.employee-row .em .t2{font-size:10.5px; color:var(--text-dim); margin-top:2px;}
+.perm-check{display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted);}
+
 /* ---- modal ---- */
 .modal-backdrop{
   position:fixed; inset:0; background:rgba(6,8,13,0.7); backdrop-filter:blur(4px);
-  display:none; align-items:center; justify-content:center; z-index:200; padding:20px;
+  display:none; align-items:center; justify-content:center; z-index:200; padding:20px; overflow-y:auto;
 }
 .modal-backdrop.open{display:flex;}
-.modal{width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border); border-radius:22px; padding:26px; box-shadow:var(--shadow-lg); animation:pop .18s ease;}
+.modal{width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border); border-radius:22px; padding:26px; box-shadow:var(--shadow-lg); animation:pop .18s ease; max-height:88vh; overflow-y:auto;}
+.modal.wide{max-width:640px;}
 @keyframes pop{from{transform:scale(0.96); opacity:0;}to{transform:scale(1); opacity:1;}}
 .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
 .modal-head h3{font-size:17px; font-weight:700;}
@@ -367,6 +399,8 @@ input{font-family:inherit;}
 .amount-input-wrap input{font-family:'JetBrains Mono'; font-size:22px; font-weight:700; padding-left:34px; padding-top:14px; padding-bottom:14px;}
 .amount-input-wrap .cur{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--gold); font-family:'JetBrains Mono'; font-weight:700; font-size:20px;}
 .balance-hint{font-size:11.5px; color:var(--text-dim); margin-top:6px;}
+.checkbox-row{display:flex; align-items:center; gap:8px; margin-bottom:12px; font-size:13px; color:var(--text-muted);}
+.checkbox-row input{width:16px; height:16px; accent-color:var(--gold-dim);}
 
 /* ---- toasts ---- */
 #toastWrap{position:fixed; top:20px; right:20px; z-index:500; display:flex; flex-direction:column; gap:10px; max-width:340px;}
@@ -384,6 +418,39 @@ input{font-family:inherit;}
 .spinner{width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(10,13,20,0.25); border-top-color:#0A0D14; animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner.light{border:2.5px solid rgba(255,255,255,0.25); border-top-color:#fff;}
+
+/* ================= ADMIN SCREEN ================= */
+#adminScreen{min-height:100vh; background:#05070c; display:flex; flex-direction:column;}
+.admin-topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--border); background:rgba(5,7,12,0.9); position:sticky; top:0; z-index:50;}
+.admin-topbar .brand{display:flex; align-items:center; gap:10px; font-family:'Space Grotesk'; font-weight:700; font-size:16.5px; color:var(--gold-soft);}
+.admin-main{flex:1; max-width:1100px; margin:0 auto; width:100%; padding:28px 24px 60px;}
+.admin-tabs{display:flex; gap:8px; margin-bottom:22px;}
+.admin-tab{padding:9px 16px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-weight:600; font-size:13px;}
+.admin-tab.active{background:var(--surface-3); color:var(--gold-soft); border-color:var(--gold-dim);}
+
+.admin-table{width:100%; border-collapse:collapse;}
+.admin-table th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); padding:8px 10px; border-bottom:1px solid var(--border);}
+.admin-table td{padding:10px; border-bottom:1px solid var(--border-soft); font-size:13px; vertical-align:middle;}
+.admin-table tr.clickable{cursor:pointer;}
+.admin-table tr.clickable:hover td{background:var(--surface-2);}
+.au-name{display:flex; align-items:center; gap:10px;}
+.au-av{width:32px; height:32px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--gold-soft); overflow:hidden; flex-shrink:0;}
+.au-av img{width:100%; height:100%; object-fit:cover;}
+.ip-tag{font-family:'JetBrains Mono'; font-size:11px; color:var(--text-dim);}
+.ip-tag.dup{color:var(--red); font-weight:700;}
+.bonus-badge{background:rgba(242,184,75,0.15); color:var(--gold-soft); font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px;}
+
+.console-box{
+  background:#03040a; border:1px solid var(--border); border-radius:16px; padding:16px; height:480px; overflow-y:auto;
+  font-family:'JetBrains Mono'; font-size:12px; line-height:1.7; color:#8fd4c1;
+}
+.console-line{white-space:pre-wrap; word-break:break-word;}
+.console-line .ts{color:var(--text-dim);}
+.console-line .amt-pos{color:var(--teal); font-weight:700;}
+.console-line .amt-neg{color:var(--gold);}
+
+.admin-form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media (max-width:600px){ .admin-form-grid{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -432,7 +499,6 @@ input{font-family:inherit;}
         <button class="auth-tab" id="tabSignup">Créer un compte</button>
       </div>
 
-      <!-- LOGIN -->
       <div id="loginForm">
         <div class="auth-title">Content de vous revoir 👋</div>
         <div class="auth-sub">Connectez-vous pour accéder à votre solde.</div>
@@ -454,10 +520,9 @@ input{font-family:inherit;}
         <div class="auth-foot">Pas encore de compte ? <a href="#" id="goSignup" style="color:var(--gold); font-weight:600;">Inscrivez-vous</a></div>
       </div>
 
-      <!-- SIGNUP -->
       <div id="signupForm" class="hidden">
         <div class="auth-title">Bienvenue sur KykyPay 🚀</div>
-        <div class="auth-sub">Créez votre compte et recevez 1 000 K offerts.</div>
+        <div class="auth-sub">Créez votre compte. Le bonus de bienvenue de 1 000 K sera accordé par un administrateur après vérification.</div>
         <div class="auth-error" id="signupError"></div>
         <form id="signupFormEl" autocomplete="on">
           <div class="avatar-picker">
@@ -500,16 +565,18 @@ input{font-family:inherit;}
         <div class="pname" id="chipName">—</div>
         <div class="profile-menu" id="profileMenu">
           <div class="pm-head">
-            <div class="n" id="pmName">—</div>
+            <div class="n" id="pmName">— <span class="biz-badge hidden" id="pmBizBadge">BUSINESS</span></div>
             <div class="p" id="pmPseudo">—</div>
             <div class="e" id="pmEmail">—</div>
           </div>
           <button class="pm-item" id="pmEditProfile">✎ Modifier le profil</button>
+          <button class="pm-item" id="pmConvertBiz">🏢 Transformer en compte Business</button>
           <button class="pm-item" id="pmRefresh">↻ Actualiser</button>
           <div class="switch-row">
             <span class="sl">🔊 Sons activés</span>
             <label class="switch"><input type="checkbox" id="soundToggle" checked><span class="track"></span></label>
           </div>
+          <button class="pm-item admin hidden" id="pmAdmin">🛠 Panneau admin</button>
           <button class="pm-item danger" id="pmLogout">⎋ Se déconnecter</button>
         </div>
       </div>
@@ -520,17 +587,19 @@ input{font-family:inherit;}
     <div class="card-panel">
       <div class="balance-card" id="balanceCard">
         <div class="row-top">
-          <div class="brand-mini">KykyPay</div>
+          <div class="brand-mini" id="cardBrand">KykyPay</div>
           <div class="num" id="cardNumber">•••• •••• •••• ••••</div>
         </div>
         <div class="amount-block">
-          <div class="amount-label">Solde disponible</div>
+          <div class="amount-label" id="amountLabel">Solde disponible</div>
           <div class="amount" id="balanceAmount">0,00 K</div>
         </div>
         <div class="row-bottom">
           <div class="holder-name" id="cardHolder">—</div>
         </div>
       </div>
+
+      <div class="negative-banner hidden" id="negativeBanner"></div>
 
       <div class="quick-actions">
         <button class="qa-btn send" id="openSendModal">
@@ -556,7 +625,23 @@ input{font-family:inherit;}
         </div>
       </div>
 
-      <div class="mini-note">💡 Astuce : partagez votre email ou votre pseudo KykyPay avec un ami pour qu'il puisse vous envoyer de l'argent virtuel instantanément.</div>
+      <div class="panel" id="employeesPanel" style="margin-top:20px; display:none;">
+        <div class="panel-head"><h2>Employés de l'entreprise</h2></div>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px; line-height:1.5;">Les employés gèrent l'entreprise depuis leur propre compte, dans « Mes entreprises ». Vous gardez toujours accès complet ici.</p>
+        <button class="btn-secondary" id="openManageOwnBiz">Gérer les employés</button>
+      </div>
+
+      <div class="panel" id="myBusinessesPanel" style="margin-top:20px; display:none;">
+        <div class="panel-head"><h2>Mes entreprises</h2></div>
+        <div id="myBusinessesList"></div>
+      </div>
+
+      <div class="panel" id="debtsPanel" style="margin-top:20px; display:none;">
+        <div class="panel-head"><h2>Dettes</h2></div>
+        <div id="debtsList"></div>
+      </div>
+
+      <div class="mini-note" id="miniNote">💡 Astuce : partagez votre email ou votre pseudo KykyPay avec un ami pour qu'il puisse vous envoyer de l'argent virtuel instantanément.</div>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:20px; min-width:0;">
@@ -593,6 +678,53 @@ input{font-family:inherit;}
   </div>
 </div>
 
+<!-- ================= ADMIN SCREEN ================= -->
+<div id="adminScreen" class="hidden">
+  <div class="admin-topbar">
+    <div class="brand">🛠 Panneau admin — KykyPay</div>
+    <button class="btn-small ghost" id="adminBack">← Retour à l'application</button>
+  </div>
+  <div class="admin-main">
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="adminTabUsers">Utilisateurs</button>
+      <button class="admin-tab" id="adminTabDebts">Dettes</button>
+      <button class="admin-tab" id="adminTabConsole">Console live</button>
+    </div>
+
+    <div id="adminPaneUsers">
+      <table class="admin-table">
+        <thead><tr><th>Utilisateur</th><th>Email</th><th>IP</th><th>Solde</th><th>Bonus</th></tr></thead>
+        <tbody id="adminUsersBody"></tbody>
+      </table>
+    </div>
+
+    <div id="adminPaneDebts" class="hidden">
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-head"><h2>Assigner une dette</h2></div>
+        <form id="adminDebtForm">
+          <div class="admin-form-grid">
+            <div class="field"><label>Email du débiteur (doit)</label><input class="input" type="email" id="debtFromEmail" required></div>
+            <div class="field"><label>Email du créancier (est dû)</label><input class="input" type="email" id="debtToEmail" required></div>
+          </div>
+          <div class="admin-form-grid">
+            <div class="field"><label>Montant</label><input class="input" type="number" min="0.01" step="0.01" id="debtAmount" required></div>
+            <div class="field"><label>Note (optionnel)</label><input class="input" type="text" id="debtNote" maxlength="80"></div>
+          </div>
+          <button class="btn-primary" type="submit" id="adminDebtBtn"><span class="txt">Créer la dette</span><span class="spin"><div class="spinner"></div></span></button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Dettes en cours</h2></div>
+        <div id="adminDebtsList"></div>
+      </div>
+    </div>
+
+    <div id="adminPaneConsole" class="hidden">
+      <div class="console-box" id="consoleBox"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ================= SEND MODAL ================= -->
 <div class="modal-backdrop" id="sendModalBackdrop">
   <div class="modal">
@@ -616,7 +748,7 @@ input{font-family:inherit;}
           <span class="cur">K</span>
           <input class="input" type="number" id="sendAmount" placeholder="0.00" min="0.01" step="0.01" required>
         </div>
-        <div class="balance-hint">Solde disponible : <span id="sendBalanceHint">0,00 K</span></div>
+        <div class="balance-hint">Solde disponible : <span id="sendBalanceHint">0,00 K</span> · découvert autorisé jusqu'à -1 000 K</div>
       </div>
       <div class="field">
         <label>Message (optionnel)</label>
@@ -704,7 +836,7 @@ input{font-family:inherit;}
   </div>
 </div>
 
-<!-- ================= PSEUDO MODAL (obligatoire, une seule fois) ================= -->
+<!-- ================= PSEUDO MODAL ================= -->
 <div class="modal-backdrop" id="pseudoModalBackdrop">
   <div class="modal">
     <div class="modal-head"><h3>Choisissez votre pseudo</h3></div>
@@ -717,6 +849,74 @@ input{font-family:inherit;}
       </div>
       <button class="btn-primary" type="submit" id="pseudoBtn"><span class="txt">Valider mon pseudo</span><span class="spin"><div class="spinner"></div></span></button>
     </form>
+  </div>
+</div>
+
+<!-- ================= CONVERT TO BUSINESS MODAL ================= -->
+<div class="modal-backdrop" id="convertModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Transformer en compte Business</h3>
+      <button class="modal-close" id="closeConvertModal">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">Ce compte deviendra un compte entreprise : vous pourrez ajouter des employés avec des permissions (retirer des fonds, gérer les employés). Cette action reste réversible en contactant un administrateur.</p>
+    <div class="auth-error" id="convertError"></div>
+    <form id="convertFormEl">
+      <div class="field"><label>Nom de l'entreprise</label><input class="input" type="text" id="convertBizName" placeholder="Kyky &amp; Co" maxlength="40" required></div>
+      <button class="btn-primary" type="submit" id="convertBtn"><span class="txt">Confirmer la transformation</span><span class="spin"><div class="spinner"></div></span></button>
+    </form>
+  </div>
+</div>
+
+<!-- ================= MANAGE EMPLOYEES MODAL (générique) ================= -->
+<div class="modal-backdrop" id="manageModalBackdrop">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3 id="manageModalTitle">Gérer les employés</h3>
+      <button class="modal-close" id="closeManageModal">✕</button>
+    </div>
+    <div class="auth-error" id="manageError"></div>
+    <div id="manageEmployeesList" style="margin-bottom:18px;"></div>
+    <div style="border-top:1px solid var(--border-soft); padding-top:16px;">
+      <div class="field"><label>Ajouter un employé (email)</label><input class="input" type="email" id="addEmployeeEmail" placeholder="collegue@exemple.com"></div>
+      <div class="checkbox-row"><input type="checkbox" id="addPermWithdraw"><label for="addPermWithdraw">Peut retirer des fonds</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="addPermManage"><label for="addPermManage">Peut gérer les employés</label></div>
+      <button class="btn-secondary" type="button" id="addEmployeeBtn">+ Ajouter l'employé</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= WITHDRAW FROM BUSINESS MODAL ================= -->
+<div class="modal-backdrop" id="withdrawModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Retirer des fonds</h3>
+      <button class="modal-close" id="closeWithdrawModal">✕</button>
+    </div>
+    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;" id="withdrawFromLabel"></p>
+    <div class="auth-error" id="withdrawError"></div>
+    <form id="withdrawFormEl">
+      <div class="field">
+        <label>Montant</label>
+        <div class="amount-input-wrap"><span class="cur">K</span><input class="input" type="number" id="withdrawAmount" min="0.01" step="0.01" required></div>
+      </div>
+      <button class="btn-primary" type="submit" id="withdrawBtn"><span class="txt">Retirer vers mon compte</span><span class="spin"><div class="spinner"></div></span></button>
+    </form>
+  </div>
+</div>
+
+<!-- ================= ADMIN USER CHART MODAL ================= -->
+<div class="modal-backdrop" id="adminChartModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="adminChartTitle">Solde de l'utilisateur</h3>
+      <button class="modal-close" id="closeAdminChartModal">✕</button>
+    </div>
+    <div class="chart-head">
+      <span style="font-size:12px; color:var(--text-dim);">Évolution du solde</span>
+      <div class="chart-trend flat" id="adminChartTrend">—</div>
+    </div>
+    <div class="chart-svg-wrap" id="adminChartWrap"></div>
   </div>
 </div>
 
@@ -745,6 +945,7 @@ const auth = firebase.auth();
 const db = firebase.database();
 const ROOT = "kykypay";
 const STARTING_BALANCE = 1000;
+const DEBT_LIMIT = -1000;
 
 /* ---------------- Utilitaires ---------------- */
 const $ = (id) => document.getElementById(id);
@@ -754,7 +955,7 @@ function formatMoney(n){
   return new Intl.NumberFormat('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}).format(num) + " K";
 }
 function initials(prenom, nom){
-  return ((prenom?.[0]||"") + (nom?.[0]||"")).toUpperCase() || "?";
+  return ((prenom && prenom[0] ? prenom[0] : "") + (nom && nom[0] ? nom[0] : "")).toUpperCase() || "?";
 }
 function fakeCardNumber(uid){
   let h = 0;
@@ -771,23 +972,38 @@ function fmtDate(ts){
   return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'short'}) + ", " + time;
 }
 function escapeHtml(str){
-  return String(str||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str||"").replace(/[&<>"']/g, function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+  });
+}
+async function fetchClientIp(){
+  try{
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    return data.ip || 'inconnue';
+  }catch(e){
+    return 'inconnue';
+  }
 }
 
 function showToast(type, title, sub){
   const wrap = $('toastWrap');
   const el = document.createElement('div');
   el.className = 'toast ' + type;
-  el.innerHTML = `<div class="t-ic">${type==='success'?'✓':'!'}</div><div><div class="t-title">${escapeHtml(title)}</div>${sub?`<div class="t-sub">${escapeHtml(sub)}</div>`:''}</div>`;
+  el.innerHTML = '<div class="t-ic">'+(type==='success'?'✓':'!')+'</div><div><div class="t-title">'+escapeHtml(title)+'</div>'+(sub?'<div class="t-sub">'+escapeHtml(sub)+'</div>':'')+'</div>';
   wrap.appendChild(el);
-  setTimeout(()=>{ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(), 300); }, 4200);
+  setTimeout(function(){
+    el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(40px)';
+    setTimeout(function(){ el.remove(); }, 300);
+  }, 4200);
 }
 
-/* ---------------- Sons (Web Audio API, générés, pas de fichiers externes) ---------------- */
+/* ---------------- Sons ---------------- */
 let actx;
 function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
 function soundsEnabled(){ return !currentProfile || currentProfile.soundOn !== false; }
-function tone(freq, start, dur, type='sine', gainVal=0.18){
+function tone(freq, start, dur, type, gainVal){
+  type = type || 'sine'; gainVal = gainVal===undefined?0.18:gainVal;
   const c = ctx();
   const osc = c.createOscillator();
   const gain = c.createGain();
@@ -798,26 +1014,10 @@ function tone(freq, start, dur, type='sine', gainVal=0.18){
   osc.connect(gain); gain.connect(c.destination);
   osc.start(c.currentTime+start); osc.stop(c.currentTime+start+dur+0.05);
 }
-function playReceiveSound(){
-  if (!soundsEnabled()) return;
-  tone(660, 0, 0.16, 'triangle', 0.16);
-  tone(880, 0.09, 0.16, 'triangle', 0.16);
-  tone(1320, 0.18, 0.30, 'triangle', 0.20);
-}
-function playSendSound(){
-  if (!soundsEnabled()) return;
-  tone(520, 0, 0.10, 'sine', 0.14);
-  tone(360, 0.08, 0.16, 'sine', 0.12);
-}
-function playErrorSound(){
-  if (!soundsEnabled()) return;
-  tone(180, 0, 0.18, 'sawtooth', 0.10);
-}
-function playRequestSound(){
-  if (!soundsEnabled()) return;
-  tone(740, 0, 0.12, 'square', 0.08);
-  tone(740, 0.16, 0.12, 'square', 0.08);
-}
+function playReceiveSound(){ if (!soundsEnabled()) return; tone(660,0,0.16,'triangle',0.16); tone(880,0.09,0.16,'triangle',0.16); tone(1320,0.18,0.30,'triangle',0.20); }
+function playSendSound(){ if (!soundsEnabled()) return; tone(520,0,0.10,'sine',0.14); tone(360,0.08,0.16,'sine',0.12); }
+function playErrorSound(){ if (!soundsEnabled()) return; tone(180,0,0.18,'sawtooth',0.10); }
+function playRequestSound(){ if (!soundsEnabled()) return; tone(740,0,0.12,'square',0.08); tone(740,0.16,0.12,'square',0.08); }
 
 /* ---------------- Etat global ---------------- */
 let currentUser = null;
@@ -827,12 +1027,18 @@ let knownIncomingReqIds = new Set();
 let listenersAttached = false;
 let lastTxList = [];
 let pendingEditPhotoB64 = null;
+let pendingPhotoB64 = null;
+let isSending = false;
+let manageModalBizUid = null;
+let manageModalBizName = null;
+let withdrawBizUid = null;
+let withdrawBizName = null;
 
 /* ---------------- Navigation Auth (tabs) ---------------- */
-$('tabLogin').addEventListener('click', ()=>switchAuthTab('login'));
-$('tabSignup').addEventListener('click', ()=>switchAuthTab('signup'));
-$('goSignup').addEventListener('click', (e)=>{e.preventDefault(); switchAuthTab('signup');});
-$('goLogin').addEventListener('click', (e)=>{e.preventDefault(); switchAuthTab('login');});
+$('tabLogin').addEventListener('click', function(){ switchAuthTab('login'); });
+$('tabSignup').addEventListener('click', function(){ switchAuthTab('signup'); });
+$('goSignup').addEventListener('click', function(e){ e.preventDefault(); switchAuthTab('signup'); });
+$('goLogin').addEventListener('click', function(e){ e.preventDefault(); switchAuthTab('login'); });
 function switchAuthTab(which){
   const isLogin = which==='login';
   $('tabLogin').classList.toggle('active', isLogin);
@@ -841,8 +1047,8 @@ function switchAuthTab(which){
   $('signupForm').classList.toggle('hidden', isLogin);
 }
 
-document.querySelectorAll('.pw-toggle').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+document.querySelectorAll('.pw-toggle').forEach(function(btn){
+  btn.addEventListener('click', function(){
     const target = $(btn.dataset.target);
     const show = target.type === 'password';
     target.type = show ? 'text' : 'password';
@@ -850,12 +1056,12 @@ document.querySelectorAll('.pw-toggle').forEach(btn=>{
   });
 });
 
-/* ---------------- Photo -> base64 (redimensionnée) ---------------- */
+/* ---------------- Photo -> base64 ---------------- */
 function resizePhotoToB64(file, onDone){
   const reader = new FileReader();
-  reader.onload = (ev)=>{
+  reader.onload = function(ev){
     const img = new Image();
-    img.onload = ()=>{
+    img.onload = function(){
       const size = 240;
       const canvas = document.createElement('canvas');
       canvas.width = size; canvas.height = size;
@@ -869,28 +1075,25 @@ function resizePhotoToB64(file, onDone){
   };
   reader.readAsDataURL(file);
 }
-
-let pendingPhotoB64 = null;
-$('photoInput').addEventListener('change', (e)=>{
+$('photoInput').addEventListener('change', function(e){
   const file = e.target.files[0];
   if (!file) return;
-  resizePhotoToB64(file, (b64)=>{
+  resizePhotoToB64(file, function(b64){
     pendingPhotoB64 = b64;
-    $('avatarPreview').innerHTML = `<img src="${b64}">`;
+    $('avatarPreview').innerHTML = '<img src="'+b64+'">';
   });
 });
-
-$('editPhotoInput').addEventListener('change', (e)=>{
+$('editPhotoInput').addEventListener('change', function(e){
   const file = e.target.files[0];
   if (!file) return;
-  resizePhotoToB64(file, (b64)=>{
+  resizePhotoToB64(file, function(b64){
     pendingEditPhotoB64 = b64;
-    $('editAvatarPreview').innerHTML = `<img src="${b64}">`;
+    $('editAvatarPreview').innerHTML = '<img src="'+b64+'">';
   });
 });
 
 /* ---------------- Inscription ---------------- */
-$('signupFormEl').addEventListener('submit', async (e)=>{
+$('signupFormEl').addEventListener('submit', async function(e){
   e.preventDefault();
   const errEl = $('signupError'); errEl.classList.remove('show');
   const prenom = $('signupPrenom').value.trim();
@@ -906,19 +1109,23 @@ $('signupFormEl').addEventListener('submit', async (e)=>{
 
   setLoading('signupBtn', true);
   try{
+    const ip = await fetchClientIp();
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     const uid = cred.user.uid;
     const profile = {
       prenom, nom, email,
       photoB64: pendingPhotoB64 || null,
-      solde: STARTING_BALANCE,
+      solde: 0,
+      pendingStartBonus: true,
       pseudo: null,
       soundOn: true,
+      accountType: 'personal',
+      ip: ip,
       createdAt: Date.now()
     };
-    await db.ref(`${ROOT}/users/${uid}`).set(profile);
-    await db.ref(`${ROOT}/balanceHistory/${uid}`).push({balance: STARTING_BALANCE, date: Date.now()});
-    showToast('success', 'Compte créé', `Bienvenue ${prenom} ! 1 000 K ont été crédités.`);
+    await db.ref(ROOT+"/users/"+uid).set(profile);
+    await db.ref(ROOT+"/balanceHistory/"+uid).push({balance: 0, date: Date.now()});
+    showToast('success', 'Compte créé', 'Bienvenue '+prenom+' ! Votre bonus de 1 000 K sera accordé après vérification par un administrateur.');
   }catch(err){
     errEl.textContent = translateAuthError(err);
     errEl.classList.add('show');
@@ -927,7 +1134,7 @@ $('signupFormEl').addEventListener('submit', async (e)=>{
 });
 
 /* ---------------- Connexion ---------------- */
-$('loginFormEl').addEventListener('submit', async (e)=>{
+$('loginFormEl').addEventListener('submit', async function(e){
   e.preventDefault();
   const errEl = $('loginError'); errEl.classList.remove('show');
   const email = $('loginEmail').value.trim();
@@ -962,31 +1169,45 @@ function setLoading(btnId, loading){
 }
 
 /* ---------------- Etat d'authentification ---------------- */
-auth.onAuthStateChanged(async (user)=>{
+auth.onAuthStateChanged(async function(user){
   $('bootLoader').classList.add('hidden');
   if (user){
     currentUser = user;
-    const snap = await db.ref(`${ROOT}/users/${user.uid}`).once('value');
+    const snap = await db.ref(ROOT+"/users/"+user.uid).once('value');
     currentProfile = snap.val();
     if (!currentProfile){
-      // sécurité : profil manquant, on déconnecte
       await auth.signOut();
       return;
     }
     $('authScreen').classList.add('hidden');
+    $('adminScreen').classList.add('hidden');
     $('appScreen').classList.remove('hidden');
     renderProfile();
     if (!listenersAttached){ attachRealtimeListeners(); listenersAttached = true; }
+    ensureBalanceCheckpoint();
     maybeAskPseudo();
   } else {
     currentUser = null; currentProfile = null; knownTxIds = new Set(); knownIncomingReqIds = new Set(); listenersAttached = false;
     $('appScreen').classList.add('hidden');
+    $('adminScreen').classList.add('hidden');
     $('authScreen').classList.remove('hidden');
     $('pseudoModalBackdrop').classList.remove('open');
-    ['loginFormEl','signupFormEl'].forEach(id=>$(id).reset());
+    ['loginFormEl','signupFormEl'].forEach(function(id){ $(id).reset(); });
     setLoading('loginBtn', false); setLoading('signupBtn', false);
   }
 });
+
+/* ---------------- Checkpoint solde (répare le graphique) ---------------- */
+async function ensureBalanceCheckpoint(){
+  const uid = currentUser.uid;
+  const snap = await db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').limitToLast(1).once('value');
+  let lastVal = null;
+  snap.forEach(function(c){ lastVal = c.val().balance; });
+  const current = currentProfile.solde || 0;
+  if (lastVal === null || Math.abs(lastVal - current) > 0.001){
+    await db.ref(ROOT+"/balanceHistory/"+uid).push({balance: current, date: Date.now()});
+  }
+}
 
 /* ---------------- Pseudo obligatoire (une fois) ---------------- */
 function maybeAskPseudo(){
@@ -998,8 +1219,7 @@ function maybeAskPseudo(){
     $('pseudoModalBackdrop').classList.remove('open');
   }
 }
-
-$('pseudoFormEl').addEventListener('submit', async (e)=>{
+$('pseudoFormEl').addEventListener('submit', async function(e){
   e.preventDefault();
   const errEl = $('pseudoError'); errEl.classList.remove('show');
   const pseudo = $('pseudoInput').value.trim();
@@ -1010,18 +1230,18 @@ $('pseudoFormEl').addEventListener('submit', async (e)=>{
   }
   setLoading('pseudoBtn', true);
   try{
-    const snap = await db.ref(`${ROOT}/users`).orderByChild('pseudo').equalTo(pseudo).once('value');
+    const snap = await db.ref(ROOT+"/users").orderByChild('pseudo').equalTo(pseudo).once('value');
     if (snap.exists()){
       errEl.textContent = "Ce pseudo est déjà pris, essayez-en un autre.";
       errEl.classList.add('show');
       setLoading('pseudoBtn', false);
       return;
     }
-    await db.ref(`${ROOT}/users/${currentUser.uid}/pseudo`).set(pseudo);
+    await db.ref(ROOT+"/users/"+currentUser.uid+"/pseudo").set(pseudo);
     currentProfile.pseudo = pseudo;
     renderProfile();
     $('pseudoModalBackdrop').classList.remove('open');
-    showToast('success', 'Pseudo enregistré', `Vous êtes désormais @${pseudo}.`);
+    showToast('success', 'Pseudo enregistré', 'Vous êtes désormais @'+pseudo+'.');
   }catch(err){
     errEl.textContent = "Une erreur est survenue. Réessayez.";
     errEl.classList.add('show');
@@ -1033,44 +1253,60 @@ $('pseudoFormEl').addEventListener('submit', async (e)=>{
 /* ---------------- Rendu profil / carte ---------------- */
 function renderProfile(){
   const p = currentProfile;
-  const fullName = `${p.prenom} ${p.nom}`;
+  const isBiz = p.accountType === 'business';
+  const fullName = p.prenom+" "+p.nom;
   $('chipName').textContent = p.pseudo ? p.pseudo : p.prenom;
-  $('pmName').textContent = fullName;
+  $('pmName').innerHTML = escapeHtml(fullName) + (isBiz ? ' <span class="biz-badge">BUSINESS</span>' : '');
   $('pmPseudo').textContent = p.pseudo ? '@' + p.pseudo : '';
   $('pmEmail').textContent = p.email;
   $('cardHolder').textContent = fullName.toUpperCase();
   $('cardNumber').textContent = fakeCardNumber(currentUser.uid);
+  $('cardBrand').textContent = isBiz ? (p.businessName || 'KykyPay Business') : 'KykyPay';
+  $('amountLabel').textContent = isBiz ? "Solde de l'entreprise" : 'Solde disponible';
+  $('balanceCard').classList.toggle('biz', isBiz);
   $('myEmailField').value = p.email;
   $('myPseudoField').value = p.pseudo ? '@' + p.pseudo : '—';
   $('soundToggle').checked = p.soundOn !== false;
+  $('pmConvertBiz').classList.toggle('hidden', isBiz);
+  $('employeesPanel').style.display = isBiz ? '' : 'none';
+  $('pmAdmin').classList.toggle('hidden', p.isAdmin !== true);
 
-  const avatarHtml = p.photoB64 ? `<img src="${p.photoB64}">` : initials(p.prenom, p.nom);
+  if (p.pendingStartBonus){
+    $('miniNote').innerHTML = '⏳ Votre bonus de bienvenue de 1 000 K est en attente de validation par un administrateur.';
+  } else {
+    $('miniNote').innerHTML = "💡 Astuce : partagez votre email ou votre pseudo KykyPay avec un ami pour qu'il puisse vous envoyer de l'argent virtuel instantanément.";
+  }
+
+  const avatarHtml = p.photoB64 ? '<img src="'+p.photoB64+'">' : initials(p.prenom, p.nom);
   $('chipAvatar').innerHTML = avatarHtml;
+
+  loadMyBusinesses();
+  loadMyDebts();
 }
 
 /* ---------------- Profile menu dropdown ---------------- */
-$('profileChip').addEventListener('click', (e)=>{
+$('profileChip').addEventListener('click', function(e){
   e.stopPropagation();
   $('profileMenu').classList.toggle('open');
 });
-document.addEventListener('click', ()=> $('profileMenu').classList.remove('open'));
-$('pmLogout').addEventListener('click', ()=> auth.signOut());
-$('pmRefresh').addEventListener('click', async (e)=>{
+document.addEventListener('click', function(){ $('profileMenu').classList.remove('open'); });
+$('pmLogout').addEventListener('click', function(){ auth.signOut(); });
+$('pmRefresh').addEventListener('click', async function(e){
   e.stopPropagation();
-  const snap = await db.ref(`${ROOT}/users/${currentUser.uid}`).once('value');
+  const snap = await db.ref(ROOT+"/users/"+currentUser.uid).once('value');
   currentProfile = snap.val();
   renderProfile();
   showToast('success','Profil actualisé');
 });
-$('soundToggle').addEventListener('click', (e)=> e.stopPropagation());
-$('soundToggle').addEventListener('change', async (e)=>{
+$('soundToggle').addEventListener('click', function(e){ e.stopPropagation(); });
+$('soundToggle').addEventListener('change', async function(e){
   const on = e.target.checked;
   currentProfile.soundOn = on;
-  await db.ref(`${ROOT}/users/${currentUser.uid}/soundOn`).set(on);
+  await db.ref(ROOT+"/users/"+currentUser.uid+"/soundOn").set(on);
 });
 
 /* ---------------- Modal : Modifier le profil ---------------- */
-$('pmEditProfile').addEventListener('click', (e)=>{
+$('pmEditProfile').addEventListener('click', function(e){
   e.stopPropagation();
   $('profileMenu').classList.remove('open');
   pendingEditPhotoB64 = null;
@@ -1078,13 +1314,13 @@ $('pmEditProfile').addEventListener('click', (e)=>{
   $('editPseudo').value = currentProfile.pseudo || '';
   $('editPrenom').value = currentProfile.prenom || '';
   $('editNom').value = currentProfile.nom || '';
-  $('editAvatarPreview').innerHTML = currentProfile.photoB64 ? `<img src="${currentProfile.photoB64}">` : initials(currentProfile.prenom, currentProfile.nom);
+  $('editAvatarPreview').innerHTML = currentProfile.photoB64 ? '<img src="'+currentProfile.photoB64+'">' : initials(currentProfile.prenom, currentProfile.nom);
   $('editModalBackdrop').classList.add('open');
 });
-$('closeEditModal').addEventListener('click', ()=> $('editModalBackdrop').classList.remove('open'));
-$('editModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='editModalBackdrop') $('editModalBackdrop').classList.remove('open'); });
+$('closeEditModal').addEventListener('click', function(){ $('editModalBackdrop').classList.remove('open'); });
+$('editModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='editModalBackdrop') $('editModalBackdrop').classList.remove('open'); });
 
-$('editFormEl').addEventListener('submit', async (e)=>{
+$('editFormEl').addEventListener('submit', async function(e){
   e.preventDefault();
   const errEl = $('editError'); errEl.classList.remove('show');
   const pseudo = $('editPseudo').value.trim();
@@ -1094,9 +1330,9 @@ $('editFormEl').addEventListener('submit', async (e)=>{
   setLoading('editBtn', true);
   try{
     if (pseudo !== currentProfile.pseudo){
-      const snap = await db.ref(`${ROOT}/users`).orderByChild('pseudo').equalTo(pseudo).once('value');
+      const snap = await db.ref(ROOT+"/users").orderByChild('pseudo').equalTo(pseudo).once('value');
       let takenByOther = false;
-      snap.forEach(c=>{ if (c.key !== currentUser.uid) takenByOther = true; });
+      snap.forEach(function(c){ if (c.key !== currentUser.uid) takenByOther = true; });
       if (takenByOther){
         errEl.textContent = "Ce pseudo est déjà pris.";
         errEl.classList.add('show');
@@ -1104,9 +1340,9 @@ $('editFormEl').addEventListener('submit', async (e)=>{
         return;
       }
     }
-    const updates = { pseudo, prenom, nom };
+    const updates = { pseudo: pseudo, prenom: prenom, nom: nom };
     if (pendingEditPhotoB64) updates.photoB64 = pendingEditPhotoB64;
-    await db.ref(`${ROOT}/users/${currentUser.uid}`).update(updates);
+    await db.ref(ROOT+"/users/"+currentUser.uid).update(updates);
     Object.assign(currentProfile, updates);
     renderProfile();
     $('editModalBackdrop').classList.remove('open');
@@ -1119,23 +1355,59 @@ $('editFormEl').addEventListener('submit', async (e)=>{
   }
 });
 
+/* ---------------- Transformer en compte Business ---------------- */
+$('pmConvertBiz').addEventListener('click', function(e){
+  e.stopPropagation();
+  $('profileMenu').classList.remove('open');
+  $('convertError').classList.remove('show');
+  $('convertBizName').value = '';
+  $('convertModalBackdrop').classList.add('open');
+});
+$('closeConvertModal').addEventListener('click', function(){ $('convertModalBackdrop').classList.remove('open'); });
+$('convertModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='convertModalBackdrop') $('convertModalBackdrop').classList.remove('open'); });
+
+$('convertFormEl').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const errEl = $('convertError'); errEl.classList.remove('show');
+  const name = $('convertBizName').value.trim();
+  if (!name){ errEl.textContent = "Merci d'indiquer un nom."; errEl.classList.add('show'); return; }
+  setLoading('convertBtn', true);
+  try{
+    await db.ref(ROOT+"/users/"+currentUser.uid).update({ accountType:'business', businessName: name });
+    currentProfile.accountType = 'business';
+    currentProfile.businessName = name;
+    renderProfile();
+    $('convertModalBackdrop').classList.remove('open');
+    showToast('success', 'Compte transformé', name+' est maintenant un compte KykyPay Business.');
+  }catch(err){
+    errEl.textContent = "Une erreur est survenue. Réessayez.";
+    errEl.classList.add('show');
+  }finally{
+    setLoading('convertBtn', false);
+  }
+});
+
 /* ---------------- Carte : effet tilt souris ---------------- */
 const bCard = $('balanceCard');
-bCard.addEventListener('mousemove', (e)=>{
+bCard.addEventListener('mousemove', function(e){
   const r = bCard.getBoundingClientRect();
   const x = (e.clientX - r.left)/r.width - 0.5;
   const y = (e.clientY - r.top)/r.height - 0.5;
-  bCard.style.transform = `rotateX(${-y*8}deg) rotateY(${x*12}deg)`;
+  bCard.style.transform = 'rotateX('+(-y*8)+'deg) rotateY('+(x*12)+'deg)';
 });
-bCard.addEventListener('mouseleave', ()=>{ bCard.style.transform = 'rotateX(0) rotateY(0)'; });
+bCard.addEventListener('mouseleave', function(){ bCard.style.transform = 'rotateX(0) rotateY(0)'; });
 
 /* ---------------- Balance display avec animation ---------------- */
 let lastDisplayedBalance = null;
+let balanceAnimId = 0;
 function animateBalance(target){
   const el = $('balanceAmount');
-  const start = lastDisplayedBalance ?? target;
+  el.classList.toggle('negative', target < 0);
+  const myAnim = ++balanceAnimId;
+  const start = lastDisplayedBalance === null ? target : lastDisplayedBalance;
   const dur = 500; const t0 = performance.now();
   function step(t){
+    if (myAnim !== balanceAnimId) return; // une animation plus récente a pris le relais
     const p = Math.min(1, (t-t0)/dur);
     const eased = 1 - Math.pow(1-p, 3);
     const val = start + (target-start)*eased;
@@ -1144,63 +1416,67 @@ function animateBalance(target){
   }
   requestAnimationFrame(step);
   $('sendBalanceHint').textContent = formatMoney(target);
+
+  const banner = $('negativeBanner');
+  if (target < 0){
+    banner.classList.remove('hidden');
+    banner.textContent = '⚠️ Solde négatif : vous devez '+formatMoney(Math.abs(target))+' à KykyPay. Remboursez dès que possible (découvert maximum : 1 000 K).';
+  } else {
+    banner.classList.add('hidden');
+  }
 }
 
 /* ---------------- Listeners temps réel ---------------- */
 function attachRealtimeListeners(){
   const uid = currentUser.uid;
 
-  // Solde en direct
-  db.ref(`${ROOT}/users/${uid}/solde`).on('value', (snap)=>{
-    animateBalance(snap.val() || 0);
+  db.ref(ROOT+"/users/"+uid+"/solde").on('value', function(snap){
+    const v = snap.val() || 0;
+    currentProfile.solde = v;
+    animateBalance(v);
   });
 
-  // Historique du solde -> graphique
-  db.ref(`${ROOT}/balanceHistory/${uid}`).orderByChild('date').on('value', (snap)=>{
+  db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').on('value', function(snap){
     const points = [];
-    snap.forEach(c=> points.push(c.val()));
-    renderBalanceChart(points);
+    snap.forEach(function(c){ points.push(c.val()); });
+    renderBalanceChartInto(points, $('chartWrap'), $('chartTrend'));
   });
 
-  // Historique complet (fusion envoyés + reçus)
   const refreshHistory = debounce(loadTransactionHistory, 150);
+  const qTo = db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid);
+  const qFrom = db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid);
 
-  const qTo = db.ref(`${ROOT}/transactions`).orderByChild('toUid').equalTo(uid);
-  const qFrom = db.ref(`${ROOT}/transactions`).orderByChild('fromUid').equalTo(uid);
-
-  // Chargement initial pour connaître les IDs déjà existants (évite de jouer le son au login)
-  Promise.all([qTo.once('value'), qFrom.once('value')]).then(([sTo, sFrom])=>{
-    sTo.forEach(c=>knownTxIds.add(c.key));
-    sFrom.forEach(c=>knownTxIds.add(c.key));
+  Promise.all([qTo.once('value'), qFrom.once('value')]).then(function(results){
+    results[0].forEach(function(c){ knownTxIds.add(c.key); });
+    results[1].forEach(function(c){ knownTxIds.add(c.key); });
     loadTransactionHistory();
 
-    qTo.on('child_added', (snap)=>{
+    qTo.on('child_added', function(snap){
       if (!knownTxIds.has(snap.key)){
         knownTxIds.add(snap.key);
         const tx = snap.val();
         playReceiveSound();
-        showToast('success', `💸 ${tx.fromNom} vous a envoyé ${formatMoney(tx.amount)}`, tx.message || '');
+        showToast('success', '💸 '+tx.fromNom+' vous a envoyé '+formatMoney(tx.amount), tx.message || '');
       }
       refreshHistory();
     });
-    qFrom.on('child_added', (snap)=>{
+    qFrom.on('child_added', function(snap){
       if (!knownTxIds.has(snap.key)){ knownTxIds.add(snap.key); }
       refreshHistory();
     });
   });
 
-  // Demandes d'argent reçues
-  const qReqIncoming = db.ref(`${ROOT}/requests`).orderByChild('toUid').equalTo(uid);
-  qReqIncoming.once('value').then((snap)=>{
-    snap.forEach(c=> knownIncomingReqIds.add(c.key));
+  const qReqIncoming = db.ref(ROOT+"/requests").orderByChild('toUid').equalTo(uid);
+  qReqIncoming.once('value').then(function(snap){
+    snap.forEach(function(c){ knownIncomingReqIds.add(c.key); });
     refreshRequestsList();
-    qReqIncoming.on('child_added', (snap)=>{
+    qReqIncoming.on('child_added', function(snap){
       if (!knownIncomingReqIds.has(snap.key)){
         knownIncomingReqIds.add(snap.key);
         const r = snap.val();
         if (r.status === 'pending'){
           playRequestSound();
-          showToast('success', `🙋 ${r.fromNom} vous demande ${formatMoney(r.amount)}`, r.message || '');
+          showToast('success', '🙋 '+r.fromNom+' vous demande '+formatMoney(r.amount), r.message || '');
         }
       }
       refreshRequestsList();
@@ -1208,36 +1484,39 @@ function attachRealtimeListeners(){
     qReqIncoming.on('child_changed', refreshRequestsList);
   });
 
-  // Demandes d'argent envoyées : notifier quand elles sont traitées
-  const qReqOutgoing = db.ref(`${ROOT}/requests`).orderByChild('fromUid').equalTo(uid);
-  let outgoingKnownStatus = {};
-  qReqOutgoing.once('value').then((snap)=>{
-    snap.forEach(c=> outgoingKnownStatus[c.key] = c.val().status);
-    qReqOutgoing.on('child_changed', (snap)=>{
+  const qReqOutgoing = db.ref(ROOT+"/requests").orderByChild('fromUid').equalTo(uid);
+  const outgoingKnownStatus = {};
+  qReqOutgoing.once('value').then(function(snap){
+    snap.forEach(function(c){ outgoingKnownStatus[c.key] = c.val().status; });
+    qReqOutgoing.on('child_changed', function(snap){
       const r = snap.val();
       const prevStatus = outgoingKnownStatus[snap.key];
       if (prevStatus === 'pending' && r.status === 'accepted'){
-        showToast('success', `${r.toNom} a accepté votre demande`, formatMoney(r.amount) + ' reçus.');
+        showToast('success', r.toNom+' a accepté votre demande', formatMoney(r.amount)+' reçus.');
       } else if (prevStatus === 'pending' && r.status === 'declined'){
-        showToast('error', `${r.toNom} a refusé votre demande`, r.message || '');
+        showToast('error', r.toNom+' a refusé votre demande', r.message || '');
       }
       outgoingKnownStatus[snap.key] = r.status;
     });
   });
+
+  db.ref(ROOT+"/users/"+uid+"/pendingStartBonus").on('value', function(snap){
+    if (currentProfile){ currentProfile.pendingStartBonus = snap.val(); renderProfile(); }
+  });
 }
 
-function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+function debounce(fn, ms){ let t; return function(){ const a=arguments; clearTimeout(t); t=setTimeout(function(){ fn.apply(null,a); }, ms); }; }
 
 async function loadTransactionHistory(){
   const uid = currentUser.uid;
-  const [sTo, sFrom] = await Promise.all([
-    db.ref(`${ROOT}/transactions`).orderByChild('toUid').equalTo(uid).once('value'),
-    db.ref(`${ROOT}/transactions`).orderByChild('fromUid').equalTo(uid).once('value')
+  const results = await Promise.all([
+    db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid).once('value'),
+    db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid).once('value')
   ]);
   const map = new Map();
-  sTo.forEach(c=>map.set(c.key, c.val()));
-  sFrom.forEach(c=>map.set(c.key, c.val()));
-  const list = Array.from(map.values()).sort((a,b)=>b.date-a.date);
+  results[0].forEach(function(c){ map.set(c.key, c.val()); });
+  results[1].forEach(function(c){ map.set(c.key, c.val()); });
+  const list = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; });
   lastTxList = list;
   renderStats(list, uid);
   renderTransactionList(filterTxList(list, $('txSearch').value), uid);
@@ -1246,60 +1525,58 @@ async function loadTransactionHistory(){
 function filterTxList(list, query){
   const q = (query||'').trim().toLowerCase();
   if (!q) return list;
-  return list.filter(tx=>{
+  return list.filter(function(tx){
     const other = (tx.toUid === currentUser.uid ? tx.fromNom : tx.toNom) || '';
-    return other.toLowerCase().includes(q) || (tx.message||'').toLowerCase().includes(q);
+    return other.toLowerCase().indexOf(q) !== -1 || (tx.message||'').toLowerCase().indexOf(q) !== -1;
   });
 }
-
-$('txSearch').addEventListener('input', ()=>{
+$('txSearch').addEventListener('input', function(){
   renderTransactionList(filterTxList(lastTxList, $('txSearch').value), currentUser.uid);
 });
 
 function renderStats(list, uid){
   let received = 0, sent = 0;
-  list.forEach(tx=>{
-    if (tx.toUid === uid) received += tx.amount;
-    else sent += tx.amount;
+  list.forEach(function(tx){
+    if (tx.toUid === uid) received += tx.amount; else sent += tx.amount;
   });
   $('statReceived').textContent = formatMoney(received);
   $('statSent').textContent = formatMoney(sent);
 }
 
 function renderTransactionList(list, uid){
-  $('txCount').textContent = `${lastTxList.length} mouvement${lastTxList.length>1?'s':''}`;
+  $('txCount').textContent = lastTxList.length+" mouvement"+(lastTxList.length>1?'s':'');
   const container = $('txList');
   if (list.length === 0){
     const noResults = lastTxList.length > 0;
     const emptyTitle = noResults ? 'Aucun résultat' : "Aucune transaction pour l'instant";
     const emptySub = noResults ? 'Essayez une autre recherche.' : "Envoyez votre premier virement pour voir apparaître l'historique ici.";
-    container.innerHTML = `<div class="empty-state"><div class="es-ic">${noResults?'🔍':'🧾'}</div><div class="es-t">${emptyTitle}</div><div class="es-s">${emptySub}</div></div>`;
+    container.innerHTML = '<div class="empty-state"><div class="es-ic">'+(noResults?'🔍':'🧾')+'</div><div class="es-t">'+emptyTitle+'</div><div class="es-s">'+emptySub+'</div></div>';
     return;
   }
-  container.innerHTML = list.map(tx=>{
+  container.innerHTML = list.map(function(tx){
     const received = tx.toUid === uid;
     const other = received ? tx.fromNom : tx.toNom;
-    const label = received ? `Reçu de ${escapeHtml(other)}` : `Envoyé à ${escapeHtml(other)}`;
+    const label = received ? ('Reçu de '+escapeHtml(other)) : ('Envoyé à '+escapeHtml(other));
     const sign = received ? '+' : '−';
     const cls = received ? 'pos' : 'neg';
-    const av = initials(...(other||' ').split(' '));
-    return `<div class="tx-row">
-      <div class="tx-avatar">${av}</div>
-      <div class="tx-mid">
-        <div class="t1">${label}</div>
-        <div class="t2">${tx.message ? escapeHtml(tx.message) + ' · ' : ''}${fmtDate(tx.date)}</div>
-      </div>
-      <div class="tx-amount ${cls}">${sign} ${formatMoney(tx.amount).replace('K','K').trim()}</div>
-    </div>`;
+    const av = initials.apply(null, (other||' ').split(' '));
+    return '<div class="tx-row">'+
+      '<div class="tx-avatar">'+av+'</div>'+
+      '<div class="tx-mid">'+
+        '<div class="t1">'+label+'</div>'+
+        '<div class="t2">'+(tx.message ? escapeHtml(tx.message)+' · ' : '')+fmtDate(tx.date)+'</div>'+
+      '</div>'+
+      '<div class="tx-amount '+cls+'">'+sign+' '+formatMoney(tx.amount).trim()+'</div>'+
+    '</div>';
   }).join('');
 }
 
 /* ---------------- Export CSV ---------------- */
-$('exportCsvBtn').addEventListener('click', ()=>{
+$('exportCsvBtn').addEventListener('click', function(){
   if (lastTxList.length === 0){ showToast('error', 'Rien à exporter', 'Aucune transaction enregistrée.'); return; }
   const uid = currentUser.uid;
   const rows = [['Date','Type','Contact','Montant (K)','Message']];
-  lastTxList.forEach(tx=>{
+  lastTxList.forEach(function(tx){
     const received = tx.toUid === uid;
     rows.push([
       new Date(tx.date).toLocaleString('fr-FR'),
@@ -1309,7 +1586,7 @@ $('exportCsvBtn').addEventListener('click', ()=>{
       tx.message || ''
     ]);
   });
-  const csv = rows.map(r=> r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const csv = rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
   const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1319,75 +1596,114 @@ $('exportCsvBtn').addEventListener('click', ()=>{
   showToast('success', 'Export prêt', 'Le fichier CSV a été téléchargé.');
 });
 
-/* ---------------- Graphique d'évolution du solde ---------------- */
-function renderBalanceChart(points){
-  const wrap = $('chartWrap');
-  const trendEl = $('chartTrend');
-  if (!points || points.length < 2){
-    wrap.innerHTML = `<div class="chart-empty">Pas encore assez de données pour tracer un graphique.</div>`;
+/* ---------------- Graphique d'évolution du solde (générique) ---------------- */
+function renderBalanceChartInto(points, wrapEl, trendEl){
+  if (!points || points.length === 0){
+    wrapEl.innerHTML = '<div class="chart-empty">Pas encore de données pour ce compte.</div>';
     trendEl.textContent = '—';
     trendEl.className = 'chart-trend flat';
     return;
   }
-  points.sort((a,b)=>a.date-b.date);
+  points = points.slice().sort(function(a,b){ return a.date-b.date; });
+  if (points.length === 1){
+    points = [{balance:points[0].balance, date: points[0].date - 1}, points[0]];
+  }
   const W = 400, H = 150, padX = 8, padY = 14;
-  const values = points.map(p=>p.balance);
-  let min = Math.min(...values), max = Math.max(...values);
+  const values = points.map(function(p){ return p.balance; });
+  let min = Math.min.apply(null, values), max = Math.max.apply(null, values);
   if (min === max){ min -= 1; max += 1; }
   const stepX = (W - padX*2) / (points.length - 1);
-  const scaleY = (v)=> H - padY - ((v-min)/(max-min)) * (H - padY*2);
+  function scaleY(v){ return H - padY - ((v-min)/(max-min)) * (H - padY*2); }
 
-  const coords = points.map((p,i)=> [padX + i*stepX, scaleY(p.balance)]);
-  const linePath = coords.map((c,i)=> (i===0?'M':'L') + c[0].toFixed(1) + ' ' + c[1].toFixed(1)).join(' ');
-  const areaPath = linePath + ` L ${coords[coords.length-1][0].toFixed(1)} ${H-padY} L ${coords[0][0].toFixed(1)} ${H-padY} Z`;
+  const coords = points.map(function(p,i){ return [padX + i*stepX, scaleY(p.balance)]; });
+  const linePath = coords.map(function(c,i){ return (i===0?'M':'L') + c[0].toFixed(1) + ' ' + c[1].toFixed(1); }).join(' ');
+  const areaPath = linePath + ' L ' + coords[coords.length-1][0].toFixed(1) + ' ' + (H-padY) + ' L ' + coords[0][0].toFixed(1) + ' ' + (H-padY) + ' Z';
 
   const first = values[0], last = values[values.length-1];
   const diff = last - first;
   const pct = first !== 0 ? (diff/first*100) : 0;
   trendEl.className = 'chart-trend ' + (diff > 0.001 ? 'up' : diff < -0.001 ? 'down' : 'flat');
-  trendEl.textContent = (diff > 0.001 ? '▲ +' : diff < -0.001 ? '▼ ' : '— ') + formatMoney(Math.abs(diff)) + (first ? ` (${pct>=0?'+':''}${pct.toFixed(1)}%)` : '');
+  trendEl.textContent = (diff > 0.001 ? '▲ +' : diff < -0.001 ? '▼ ' : '— ') + formatMoney(Math.abs(diff)) + (first ? (' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)') : '');
 
-  const circles = coords.map((c,i)=>{
+  const circles = coords.map(function(c,i){
     const p = points[i];
     const dateStr = new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
-    return `<circle class="chart-pt" cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3" fill="var(--gold)"><title>${dateStr} — ${formatMoney(p.balance)}</title></circle>`;
+    return '<circle class="chart-pt" cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="3" fill="var(--gold)"><title>'+dateStr+' — '+formatMoney(p.balance)+'</title></circle>';
   }).join('');
 
-  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#F2B84B" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="#F2B84B" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d="${areaPath}" fill="url(#chartFill)" stroke="none"/>
-    <path d="${linePath}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-    ${circles}
-  </svg>`;
+  wrapEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="#F2B84B" stop-opacity="0.35"/>'+
+    '<stop offset="100%" stop-color="#F2B84B" stop-opacity="0"/>'+
+    '</linearGradient></defs>'+
+    '<path d="'+areaPath+'" fill="url(#chartFill)" stroke="none"/>'+
+    '<path d="'+linePath+'" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    circles+
+    '</svg>';
+}
+
+/* ---------------- Transfert générique (utilisé par envoi, demandes, retraits) ---------------- */
+async function transferBetweenUids(fromUid, toUid, amount, message, fromMeta, toMeta){
+  amount = Math.round(amount*100)/100;
+  const fromRef = db.ref(ROOT+"/users/"+fromUid+"/solde");
+  const result = await fromRef.transaction(function(current){
+    const cur = current || 0;
+    const next = Math.round((cur-amount)*100)/100;
+    if (next < DEBT_LIMIT) return; // abort -> dépasse le découvert autorisé
+    return next;
+  });
+  if (!result.committed) throw {custom:"Cette opération dépasserait la limite de découvert autorisée (-1 000 K)."};
+
+  const recvResult = await db.ref(ROOT+"/users/"+toUid+"/solde").transaction(function(c){ return Math.round(((c||0)+amount)*100)/100; });
+
+  const txId = db.ref(ROOT+"/transactions").push().key;
+  await db.ref(ROOT+"/transactions/"+txId).set({
+    fromUid: fromUid, toUid: toUid,
+    fromEmail: fromMeta.email, toEmail: toMeta.email,
+    fromNom: fromMeta.nom, toNom: toMeta.nom,
+    amount: amount, message: message || null, date: Date.now()
+  });
+
+  await db.ref(ROOT+"/balanceHistory/"+fromUid).push({balance: result.snapshot.val(), date: Date.now()});
+  await db.ref(ROOT+"/balanceHistory/"+toUid).push({balance: recvResult.snapshot.val(), date: Date.now()});
+
+  return {fromNewBalance: result.snapshot.val(), toNewBalance: recvResult.snapshot.val()};
+}
+
+async function sendByEmail(fromUid, fromProfile, toEmail, amount, message){
+  if (toEmail === fromProfile.email) throw {custom:"Vous ne pouvez pas vous envoyer de l'argent à vous-même."};
+  const snap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(toEmail).once('value');
+  if (!snap.exists()) throw {custom:"Aucun utilisateur KykyPay ne possède cet email."};
+  const toUid = Object.keys(snap.val())[0];
+  const toProfile = Object.values(snap.val())[0];
+  const fromMeta = {email: fromProfile.email, nom: fromProfile.prenom+" "+fromProfile.nom};
+  const toMeta = {email: toProfile.email, nom: toProfile.prenom+" "+toProfile.nom};
+  const r = await transferBetweenUids(fromUid, toUid, amount, message, fromMeta, toMeta);
+  return {toUid: toUid, toProfile: toProfile, fromNewBalance: r.fromNewBalance};
 }
 
 /* ---------------- Modal : Envoyer ---------------- */
-$('openSendModal').addEventListener('click', ()=>{
+$('openSendModal').addEventListener('click', function(){
   $('sendForm').reset();
   $('sendError').classList.remove('show');
   $('recipientPreview').classList.remove('show');
   $('sendBalanceHint').textContent = formatMoney(currentProfile.solde || 0);
   $('sendModalBackdrop').classList.add('open');
 });
-$('closeSendModal').addEventListener('click', ()=> $('sendModalBackdrop').classList.remove('open'));
-$('sendModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='sendModalBackdrop') $('sendModalBackdrop').classList.remove('open'); });
+$('closeSendModal').addEventListener('click', function(){ $('sendModalBackdrop').classList.remove('open'); });
+$('sendModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='sendModalBackdrop') $('sendModalBackdrop').classList.remove('open'); });
 
 let recipientLookupTimer;
-$('sendToEmail').addEventListener('input', ()=>{
+$('sendToEmail').addEventListener('input', function(){
   clearTimeout(recipientLookupTimer);
   const email = $('sendToEmail').value.trim();
   if (!email){ $('recipientPreview').classList.remove('show'); return; }
-  recipientLookupTimer = setTimeout(async ()=>{
-    const snap = await db.ref(`${ROOT}/users`).orderByChild('email').equalTo(email).once('value');
+  recipientLookupTimer = setTimeout(async function(){
+    const snap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(email).once('value');
     if (snap.exists()){
       const data = Object.values(snap.val())[0];
-      $('rpName').textContent = `${data.prenom} ${data.nom}` + (data.pseudo?` (@${data.pseudo})`:'');
-      $('rpAv').innerHTML = data.photoB64 ? `<img src="${data.photoB64}">` : initials(data.prenom, data.nom);
+      $('rpName').textContent = data.prenom+" "+data.nom + (data.pseudo?(' (@'+data.pseudo+')'):'') + (data.accountType==='business'?' 🏢':'');
+      $('rpAv').innerHTML = data.photoB64 ? '<img src="'+data.photoB64+'">' : initials(data.prenom, data.nom);
       $('recipientPreview').classList.add('show');
     } else {
       $('recipientPreview').classList.remove('show');
@@ -1395,81 +1711,48 @@ $('sendToEmail').addEventListener('input', ()=>{
   }, 400);
 });
 
-async function performTransfer(fromUid, fromProfile, toEmail, amount, message){
-  const snap = await db.ref(`${ROOT}/users`).orderByChild('email').equalTo(toEmail).once('value');
-  if (!snap.exists()) throw {custom:"Aucun utilisateur KykyPay ne possède cet email."};
-  const toUid = Object.keys(snap.val())[0];
-  const toProfile = Object.values(snap.val())[0];
-
-  const senderRef = db.ref(`${ROOT}/users/${fromUid}/solde`);
-  const result = await senderRef.transaction((current)=>{
-    const cur = current || 0;
-    if (cur < amount) return; // abort -> insufficient funds
-    return Math.round((cur - amount) * 100) / 100;
-  });
-  if (!result.committed) throw {custom:"Solde insuffisant pour ce virement."};
-
-  const recvResult = await db.ref(`${ROOT}/users/${toUid}/solde`).transaction((current)=> Math.round(((current||0) + amount) * 100) / 100);
-
-  const txId = db.ref(`${ROOT}/transactions`).push().key;
-  await db.ref(`${ROOT}/transactions/${txId}`).set({
-    fromUid, toUid,
-    fromEmail: fromProfile.email, toEmail: toProfile.email,
-    fromNom: `${fromProfile.prenom} ${fromProfile.nom}`,
-    toNom: `${toProfile.prenom} ${toProfile.nom}`,
-    amount, message: message || null, date: Date.now()
-  });
-
-  await db.ref(`${ROOT}/balanceHistory/${fromUid}`).push({balance: result.snapshot.val(), date: Date.now()});
-  await db.ref(`${ROOT}/balanceHistory/${toUid}`).push({balance: recvResult.snapshot.val(), date: Date.now()});
-
-  return {toUid, toProfile, newBalance: result.snapshot.val()};
-}
-
-$('sendForm').addEventListener('submit', async (e)=>{
+$('sendForm').addEventListener('submit', async function(e){
   e.preventDefault();
+  if (isSending) return;
   const errEl = $('sendError'); errEl.classList.remove('show');
   const toEmail = $('sendToEmail').value.trim();
   const amount = parseFloat($('sendAmount').value);
-  const message = $('sendMessage').value.trim();
 
-  if (toEmail === currentProfile.email){
-    errEl.textContent = "Vous ne pouvez pas vous envoyer de l'argent à vous-même."; errEl.classList.add('show'); return;
-  }
-  if (!(amount > 0)){
-    errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return;
-  }
+  if (!(amount > 0)){ errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return; }
 
+  isSending = true;
   setLoading('sendBtn', true);
   try{
-    const {toProfile, newBalance} = await performTransfer(currentUser.uid, currentProfile, toEmail, amount, message);
-    currentProfile.solde = newBalance;
+    const message = $('sendMessage').value.trim();
+    const res = await sendByEmail(currentUser.uid, currentProfile, toEmail, amount, message);
+    currentProfile.solde = res.fromNewBalance;
     playSendSound();
-    showToast('success', 'Virement envoyé', `${formatMoney(amount)} envoyés à ${toProfile.prenom}.`);
+    showToast('success', 'Virement envoyé', formatMoney(amount)+' envoyés à '+res.toProfile.prenom+'.');
     $('sendModalBackdrop').classList.remove('open');
   }catch(err){
     playErrorSound();
-    errEl.textContent = err.custom || "Une erreur est survenue lors du virement.";
+    errEl.textContent = (err && err.custom) || "Une erreur est survenue lors du virement.";
     errEl.classList.add('show');
   }finally{
+    isSending = false;
     setLoading('sendBtn', false);
   }
 });
 
 /* ---------------- Modal : Recevoir / Demander ---------------- */
-$('openRequestInfo').addEventListener('click', ()=>{
+$('openRequestInfo').addEventListener('click', function(){
   switchRecvTab('myEmail');
   $('recvModalBackdrop').classList.add('open');
 });
-$('closeRecvModal').addEventListener('click', ()=> $('recvModalBackdrop').classList.remove('open'));
-$('recvModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='recvModalBackdrop') $('recvModalBackdrop').classList.remove('open'); });
-$('copyEmailBtn').addEventListener('click', ()=>{
+$('closeRecvModal').addEventListener('click', function(){ $('recvModalBackdrop').classList.remove('open'); });
+$('recvModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='recvModalBackdrop') $('recvModalBackdrop').classList.remove('open'); });
+$('copyEmailBtn').addEventListener('click', function(){
   navigator.clipboard.writeText(currentProfile.email);
   showToast('success', 'Email copié', 'Partagez-le avec vos amis KykyPay.');
 });
 
-$('tabMyEmail').addEventListener('click', ()=> switchRecvTab('myEmail'));
-$('tabAskMoney').addEventListener('click', ()=> switchRecvTab('askMoney'));
+$('tabMyEmail').addEventListener('click', function(){ switchRecvTab('myEmail'); });
+$('tabAskMoney').addEventListener('click', function(){ switchRecvTab('askMoney'); });
 function switchRecvTab(which){
   const isMine = which === 'myEmail';
   $('tabMyEmail').classList.toggle('active', isMine);
@@ -1479,59 +1762,51 @@ function switchRecvTab(which){
   $('askError').classList.remove('show');
 }
 
-$('askFormEl').addEventListener('submit', async (e)=>{
+$('askFormEl').addEventListener('submit', async function(e){
   e.preventDefault();
   const errEl = $('askError'); errEl.classList.remove('show');
   const toEmail = $('askToEmail').value.trim();
   const amount = parseFloat($('askAmount').value);
   const message = $('askMessage').value.trim();
 
-  if (toEmail === currentProfile.email){
-    errEl.textContent = "Vous ne pouvez pas vous demander de l'argent à vous-même."; errEl.classList.add('show'); return;
-  }
-  if (!(amount > 0)){
-    errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return;
-  }
+  if (toEmail === currentProfile.email){ errEl.textContent = "Vous ne pouvez pas vous demander de l'argent à vous-même."; errEl.classList.add('show'); return; }
+  if (!(amount > 0)){ errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return; }
 
   setLoading('askBtn', true);
   try{
-    const snap = await db.ref(`${ROOT}/users`).orderByChild('email').equalTo(toEmail).once('value');
+    const snap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(toEmail).once('value');
     if (!snap.exists()) throw {custom:"Aucun utilisateur KykyPay ne possède cet email."};
     const toUid = Object.keys(snap.val())[0];
     const toProfile = Object.values(snap.val())[0];
 
-    const reqId = db.ref(`${ROOT}/requests`).push().key;
-    await db.ref(`${ROOT}/requests/${reqId}`).set({
-      fromUid: currentUser.uid,
-      toUid: toUid,
-      fromEmail: currentProfile.email,
-      toEmail: toProfile.email,
-      fromNom: `${currentProfile.prenom} ${currentProfile.nom}`,
-      toNom: `${toProfile.prenom} ${toProfile.nom}`,
-      amount, message: message || null,
-      status: 'pending',
-      date: Date.now()
+    const reqId = db.ref(ROOT+"/requests").push().key;
+    await db.ref(ROOT+"/requests/"+reqId).set({
+      fromUid: currentUser.uid, toUid: toUid,
+      fromEmail: currentProfile.email, toEmail: toProfile.email,
+      fromNom: currentProfile.prenom+" "+currentProfile.nom,
+      toNom: toProfile.prenom+" "+toProfile.nom,
+      amount: amount, message: message || null, status: 'pending', date: Date.now()
     });
 
-    showToast('success', 'Demande envoyée', `Vous avez demandé ${formatMoney(amount)} à ${toProfile.prenom}.`);
+    showToast('success', 'Demande envoyée', 'Vous avez demandé '+formatMoney(amount)+' à '+toProfile.prenom+'.');
     $('recvModalBackdrop').classList.remove('open');
     $('askFormEl').reset();
   }catch(err){
     playErrorSound();
-    errEl.textContent = err.custom || "Une erreur est survenue.";
+    errEl.textContent = (err && err.custom) || "Une erreur est survenue.";
     errEl.classList.add('show');
   }finally{
     setLoading('askBtn', false);
   }
 });
 
-/* ---------------- Demandes reçues : accepter / refuser ---------------- */
+/* ---------------- Demandes reçues ---------------- */
 async function refreshRequestsList(){
   const uid = currentUser.uid;
-  const snap = await db.ref(`${ROOT}/requests`).orderByChild('toUid').equalTo(uid).once('value');
+  const snap = await db.ref(ROOT+"/requests").orderByChild('toUid').equalTo(uid).once('value');
   const all = [];
-  snap.forEach(c=> all.push({id:c.key, ...c.val()}));
-  const pending = all.filter(r=>r.status==='pending').sort((a,b)=>b.date-a.date);
+  snap.forEach(function(c){ all.push(Object.assign({id:c.key}, c.val())); });
+  const pending = all.filter(function(r){ return r.status==='pending'; }).sort(function(a,b){ return b.date-a.date; });
 
   const panel = $('requestsPanel');
   const badge = $('reqBadge');
@@ -1544,48 +1819,385 @@ async function refreshRequestsList(){
   badge.classList.remove('hidden');
   badge.textContent = pending.length;
 
-  $('requestsList').innerHTML = pending.map(r=>{
-    const av = initials(...(r.fromNom||' ').split(' '));
-    return `<div class="req-row">
-      <div class="req-avatar">${av}</div>
-      <div class="req-mid">
-        <div class="t1">${escapeHtml(r.fromNom)} vous demande de l'argent</div>
-        <div class="t2">${r.message ? escapeHtml(r.message) + ' · ' : ''}${fmtDate(r.date)}</div>
-      </div>
-      <div class="req-amount">${formatMoney(r.amount)}</div>
-      <div class="req-actions">
-        <button class="req-btn accept" data-id="${r.id}" data-action="accept">Accepter</button>
-        <button class="req-btn decline" data-id="${r.id}" data-action="decline">Refuser</button>
-      </div>
-    </div>`;
+  $('requestsList').innerHTML = pending.map(function(r){
+    const av = initials.apply(null, (r.fromNom||' ').split(' '));
+    return '<div class="req-row">'+
+      '<div class="req-avatar">'+av+'</div>'+
+      '<div class="req-mid">'+
+        '<div class="t1">'+escapeHtml(r.fromNom)+" vous demande de l'argent</div>"+
+        '<div class="t2">'+(r.message ? escapeHtml(r.message)+' · ' : '')+fmtDate(r.date)+'</div>'+
+      '</div>'+
+      '<div class="req-amount">'+formatMoney(r.amount)+'</div>'+
+      '<div class="req-actions">'+
+        '<button class="req-btn accept" data-id="'+r.id+'" data-action="accept">Accepter</button>'+
+        '<button class="req-btn decline" data-id="'+r.id+'" data-action="decline">Refuser</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
 
-  $('requestsList').querySelectorAll('.req-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> handleRequestAction(btn.dataset.id, btn.dataset.action, pending.find(r=>r.id===btn.dataset.id)));
+  $('requestsList').querySelectorAll('.req-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      handleRequestAction(btn.dataset.id, btn.dataset.action, pending.find(function(r){ return r.id===btn.dataset.id; }));
+    });
   });
 }
 
 async function handleRequestAction(reqId, action, reqData){
   if (!reqData) return;
   if (action === 'decline'){
-    await db.ref(`${ROOT}/requests/${reqId}/status`).set('declined');
+    await db.ref(ROOT+"/requests/"+reqId+"/status").set('declined');
     showToast('success', 'Demande refusée');
     return;
   }
-  // accept -> je (toUid) envoie l'argent au demandeur (fromUid)
   try{
-    const {newBalance} = await performTransfer(currentUser.uid, currentProfile, reqData.fromEmail, reqData.amount, reqData.message);
-    currentProfile.solde = newBalance;
-    await db.ref(`${ROOT}/requests/${reqId}/status`).set('accepted');
+    const res = await sendByEmail(currentUser.uid, currentProfile, reqData.fromEmail, reqData.amount, reqData.message);
+    currentProfile.solde = res.fromNewBalance;
+    await db.ref(ROOT+"/requests/"+reqId+"/status").set('accepted');
     playSendSound();
-    showToast('success', 'Demande acceptée', `${formatMoney(reqData.amount)} envoyés à ${reqData.fromNom}.`);
+    showToast('success', 'Demande acceptée', formatMoney(reqData.amount)+' envoyés à '+reqData.fromNom+'.');
   }catch(err){
     playErrorSound();
-    showToast('error', "Impossible d'accepter", err.custom || 'Solde insuffisant.');
+    showToast('error', "Impossible d'accepter", (err && err.custom) || 'Solde insuffisant.');
   }
 }
 
-/* ---------------- Débloquer l'audio au premier clic (politique navigateurs) ---------------- */
+/* ================= ENTREPRISES ================= */
+async function loadMyBusinesses(){
+  const uid = currentUser.uid;
+  const snap = await db.ref(ROOT+"/userBusinesses/"+uid).once('value');
+  const panel = $('myBusinessesPanel');
+  if (!snap.exists()){ panel.style.display = 'none'; return; }
+  const entries = [];
+  snap.forEach(function(c){ entries.push(Object.assign({bizUid:c.key}, c.val())); });
+  if (entries.length === 0){ panel.style.display = 'none'; return; }
+  panel.style.display = '';
+  $('myBusinessesList').innerHTML = entries.map(function(b){
+    const perms = (b.canWithdraw?'<span class="perm-tag">Retrait</span>':'') + (b.canManageUsers?'<span class="perm-tag">Gestion</span>':'');
+    return '<div class="biz-row">'+
+      '<div class="bm"><div class="t1">🏢 '+escapeHtml(b.bizName)+'</div><div class="t2">'+(perms||'Membre')+'</div></div>'+
+      (b.canWithdraw?'<button class="btn-small gold" data-biz="'+b.bizUid+'" data-bizname="'+escapeHtml(b.bizName)+'" data-act="withdraw">Retirer</button>':'')+
+      (b.canManageUsers?'<button class="btn-small ghost" data-biz="'+b.bizUid+'" data-bizname="'+escapeHtml(b.bizName)+'" data-act="manage">Gérer</button>':'')+
+    '</div>';
+  }).join('');
+  $('myBusinessesList').querySelectorAll('[data-act="withdraw"]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openWithdrawModal(btn.dataset.biz, btn.dataset.bizname); });
+  });
+  $('myBusinessesList').querySelectorAll('[data-act="manage"]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openManageModal(btn.dataset.biz, btn.dataset.bizname); });
+  });
+}
+
+$('openManageOwnBiz').addEventListener('click', function(){
+  openManageModal(currentUser.uid, currentProfile.businessName || 'mon entreprise');
+});
+
+function openManageModal(bizUid, bizName){
+  manageModalBizUid = bizUid; manageModalBizName = bizName;
+  $('manageModalTitle').textContent = 'Employés — '+bizName;
+  $('manageError').classList.add('hidden');
+  $('addEmployeeEmail').value = '';
+  $('addPermWithdraw').checked = false;
+  $('addPermManage').checked = false;
+  loadManageEmployeesList();
+  $('manageModalBackdrop').classList.add('open');
+}
+$('closeManageModal').addEventListener('click', function(){ $('manageModalBackdrop').classList.remove('open'); });
+$('manageModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='manageModalBackdrop') $('manageModalBackdrop').classList.remove('open'); });
+
+async function loadManageEmployeesList(){
+  const snap = await db.ref(ROOT+"/businessMembers/"+manageModalBizUid).once('value');
+  const members = [];
+  snap.forEach(function(c){ members.push(Object.assign({uid:c.key}, c.val())); });
+  if (members.length === 0){
+    $('manageEmployeesList').innerHTML = '<p style="font-size:12.5px; color:var(--text-dim);">Aucun employé pour le moment.</p>';
+    return;
+  }
+  $('manageEmployeesList').innerHTML = members.map(function(m){
+    return '<div class="employee-row">'+
+      '<div class="em"><div class="t1">'+escapeHtml(m.nom)+'</div><div class="t2">'+escapeHtml(m.email)+'</div></div>'+
+      '<label class="perm-check"><input type="checkbox" class="perm-w" data-uid="'+m.uid+'" '+(m.canWithdraw?'checked':'')+'> Retrait</label>'+
+      '<label class="perm-check"><input type="checkbox" class="perm-m" data-uid="'+m.uid+'" '+(m.canManageUsers?'checked':'')+'> Gestion</label>'+
+      '<button class="btn-small danger" data-uid="'+m.uid+'" data-act="remove">✕</button>'+
+    '</div>';
+  }).join('');
+
+  $('manageEmployeesList').querySelectorAll('.perm-w, .perm-m').forEach(function(cb){
+    cb.addEventListener('change', async function(){
+      const uid = cb.dataset.uid;
+      const isWithdraw = cb.classList.contains('perm-w');
+      const field = isWithdraw ? 'canWithdraw' : 'canManageUsers';
+      await db.ref(ROOT+"/businessMembers/"+manageModalBizUid+"/"+uid+"/"+field).set(cb.checked);
+      await db.ref(ROOT+"/userBusinesses/"+uid+"/"+manageModalBizUid+"/"+field).set(cb.checked);
+    });
+  });
+  $('manageEmployeesList').querySelectorAll('[data-act="remove"]').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      const uid = btn.dataset.uid;
+      await db.ref(ROOT+"/businessMembers/"+manageModalBizUid+"/"+uid).remove();
+      await db.ref(ROOT+"/userBusinesses/"+uid+"/"+manageModalBizUid).remove();
+      loadManageEmployeesList();
+      showToast('success', 'Employé retiré');
+    });
+  });
+}
+
+$('addEmployeeBtn').addEventListener('click', async function(){
+  const errEl = $('manageError'); errEl.classList.remove('show');
+  const email = $('addEmployeeEmail').value.trim();
+  if (!email){ errEl.textContent = "Indiquez un email."; errEl.classList.add('show'); return; }
+  if (email === currentProfile.email && manageModalBizUid === currentUser.uid){
+    errEl.textContent = "Vous êtes déjà propriétaire de cette entreprise."; errEl.classList.add('show'); return;
+  }
+  try{
+    const snap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(email).once('value');
+    if (!snap.exists()) throw {custom:"Aucun utilisateur KykyPay ne possède cet email."};
+    const empUid = Object.keys(snap.val())[0];
+    const empProfile = Object.values(snap.val())[0];
+    if (empUid === manageModalBizUid) throw {custom:"Cette personne est déjà propriétaire de l'entreprise."};
+    const already = await db.ref(ROOT+"/businessMembers/"+manageModalBizUid+"/"+empUid).once('value');
+    if (already.exists()) throw {custom:"Cette personne fait déjà partie de l'entreprise."};
+
+    const canWithdraw = $('addPermWithdraw').checked;
+    const canManageUsers = $('addPermManage').checked;
+    const memberData = { nom: empProfile.prenom+" "+empProfile.nom, email: empProfile.email, canWithdraw: canWithdraw, canManageUsers: canManageUsers, addedAt: Date.now() };
+    await db.ref(ROOT+"/businessMembers/"+manageModalBizUid+"/"+empUid).set(memberData);
+    await db.ref(ROOT+"/userBusinesses/"+empUid+"/"+manageModalBizUid).set({ bizName: manageModalBizName, canWithdraw: canWithdraw, canManageUsers: canManageUsers });
+
+    $('addEmployeeEmail').value = ''; $('addPermWithdraw').checked = false; $('addPermManage').checked = false;
+    loadManageEmployeesList();
+    showToast('success', 'Employé ajouté', empProfile.prenom+' fait maintenant partie de '+manageModalBizName+'.');
+  }catch(err){
+    errEl.textContent = (err && err.custom) || "Une erreur est survenue.";
+    errEl.classList.add('show');
+  }
+});
+
+/* ---------------- Retirer des fonds d'une entreprise ---------------- */
+function openWithdrawModal(bizUid, bizName){
+  withdrawBizUid = bizUid; withdrawBizName = bizName;
+  $('withdrawFromLabel').textContent = 'Depuis : '+bizName;
+  $('withdrawError').classList.remove('show');
+  $('withdrawAmount').value = '';
+  $('withdrawModalBackdrop').classList.add('open');
+}
+$('closeWithdrawModal').addEventListener('click', function(){ $('withdrawModalBackdrop').classList.remove('open'); });
+$('withdrawModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='withdrawModalBackdrop') $('withdrawModalBackdrop').classList.remove('open'); });
+
+$('withdrawFormEl').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const errEl = $('withdrawError'); errEl.classList.remove('show');
+  const amount = parseFloat($('withdrawAmount').value);
+  if (!(amount > 0)){ errEl.textContent = "Le montant doit être supérieur à 0."; errEl.classList.add('show'); return; }
+  setLoading('withdrawBtn', true);
+  try{
+    const bizSnap = await db.ref(ROOT+"/users/"+withdrawBizUid).once('value');
+    const bizProfile = bizSnap.val();
+    const fromMeta = {email: bizProfile.email, nom: bizProfile.businessName || (bizProfile.prenom+" "+bizProfile.nom)};
+    const toMeta = {email: currentProfile.email, nom: currentProfile.prenom+" "+currentProfile.nom};
+    const r = await transferBetweenUids(withdrawBizUid, currentUser.uid, amount, 'Retrait depuis '+withdrawBizName, fromMeta, toMeta);
+    currentProfile.solde = r.toNewBalance;
+    playSendSound();
+    showToast('success', 'Fonds retirés', formatMoney(amount)+' transférés depuis '+withdrawBizName+'.');
+    $('withdrawModalBackdrop').classList.remove('open');
+  }catch(err){
+    playErrorSound();
+    errEl.textContent = (err && err.custom) || "Une erreur est survenue.";
+    errEl.classList.add('show');
+  }finally{
+    setLoading('withdrawBtn', false);
+  }
+});
+
+/* ================= DETTES ================= */
+async function loadMyDebts(){
+  const uid = currentUser.uid;
+  const results = await Promise.all([
+    db.ref(ROOT+"/debts").orderByChild('debtorUid').equalTo(uid).once('value'),
+    db.ref(ROOT+"/debts").orderByChild('creditorUid').equalTo(uid).once('value')
+  ]);
+  const map = new Map();
+  results[0].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+  results[1].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+  const list = Array.from(map.values()).filter(function(d){ return !d.settled; }).sort(function(a,b){ return b.date-a.date; });
+
+  const panel = $('debtsPanel');
+  if (list.length === 0){ panel.style.display = 'none'; return; }
+  panel.style.display = '';
+  $('debtsList').innerHTML = list.map(function(d){
+    const isDebtor = d.debtorUid === uid;
+    const label = isDebtor ? ('Vous devez à '+escapeHtml(d.creditorNom)) : (escapeHtml(d.debtorNom)+' vous doit');
+    return '<div class="debt-row">'+
+      '<div class="bm"><div class="t1">'+label+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
+      '<div class="debt-amount '+(isDebtor?'owe':'owed')+'">'+formatMoney(d.amount)+'</div>'+
+      '<button class="btn-small ghost" data-id="'+d.id+'">Réglée</button>'+
+    '</div>';
+  }).join('');
+  $('debtsList').querySelectorAll('button[data-id]').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      await db.ref(ROOT+"/debts/"+btn.dataset.id+"/settled").set(true);
+      loadMyDebts();
+      showToast('success', 'Dette marquée comme réglée');
+    });
+  });
+}
+
+/* ================= ADMIN ================= */
+$('pmAdmin').addEventListener('click', function(e){
+  e.stopPropagation();
+  $('profileMenu').classList.remove('open');
+  openAdmin();
+});
+$('adminBack').addEventListener('click', closeAdmin);
+
+let adminConsoleAttached = false;
+
+function openAdmin(){
+  $('appScreen').classList.add('hidden');
+  $('adminScreen').classList.remove('hidden');
+  loadAdminUsers();
+  loadAdminDebts();
+}
+function closeAdmin(){
+  $('adminScreen').classList.add('hidden');
+  $('appScreen').classList.remove('hidden');
+}
+
+$('adminTabUsers').addEventListener('click', function(){ switchAdminTab('users'); });
+$('adminTabDebts').addEventListener('click', function(){ switchAdminTab('debts'); });
+$('adminTabConsole').addEventListener('click', function(){ switchAdminTab('console'); attachAdminConsole(); });
+function switchAdminTab(which){
+  ['users','debts','console'].forEach(function(t){
+    $('adminTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===which);
+    $('adminPane'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('hidden', t!==which);
+  });
+}
+
+async function loadAdminUsers(){
+  const snap = await db.ref(ROOT+"/users").once('value');
+  const users = [];
+  snap.forEach(function(c){ users.push(Object.assign({uid:c.key}, c.val())); });
+
+  const ipCounts = {};
+  users.forEach(function(u){ if (u.ip && u.ip!=='inconnue'){ ipCounts[u.ip] = (ipCounts[u.ip]||0)+1; } });
+
+  $('adminUsersBody').innerHTML = users.map(function(u){
+    const av = u.photoB64 ? '<img src="'+u.photoB64+'">' : initials(u.prenom, u.nom);
+    const dup = u.ip && ipCounts[u.ip] > 1;
+    const soldeCls = (u.solde||0) < 0 ? 'style="color:var(--red); font-weight:700;"' : '';
+    const bonusCell = u.pendingStartBonus ? '<span class="bonus-badge">En attente</span> <button class="btn-small gold" data-uid="'+u.uid+'" data-act="grant" style="margin-left:6px;">Accorder 1000 K</button>' : '<span style="color:var(--text-dim); font-size:11px;">—</span>';
+    return '<tr class="clickable" data-uid="'+u.uid+'">'+
+      '<td><div class="au-name"><div class="au-av">'+av+'</div>'+escapeHtml(u.prenom+" "+u.nom)+(u.accountType==='business'?' 🏢':'')+'</div></td>'+
+      '<td>'+escapeHtml(u.email)+'</td>'+
+      '<td><span class="ip-tag '+(dup?'dup':'')+'">'+escapeHtml(u.ip||'—')+(dup?' ⚠':'')+'</span></td>'+
+      '<td '+soldeCls+'>'+formatMoney(u.solde||0)+'</td>'+
+      '<td>'+bonusCell+'</td>'+
+    '</tr>';
+  }).join('');
+
+  $('adminUsersBody').querySelectorAll('tr').forEach(function(tr){
+    tr.addEventListener('click', function(e){
+      if (e.target.closest('[data-act="grant"]')) return;
+      openAdminUserChart(tr.dataset.uid, users.find(function(u){ return u.uid===tr.dataset.uid; }));
+    });
+  });
+  $('adminUsersBody').querySelectorAll('[data-act="grant"]').forEach(function(btn){
+    btn.addEventListener('click', async function(e){
+      e.stopPropagation();
+      const uid = btn.dataset.uid;
+      const result = await db.ref(ROOT+"/users/"+uid+"/solde").transaction(function(c){ return Math.round(((c||0)+STARTING_BALANCE)*100)/100; });
+      await db.ref(ROOT+"/users/"+uid+"/pendingStartBonus").set(false);
+      await db.ref(ROOT+"/balanceHistory/"+uid).push({balance: result.snapshot.val(), date: Date.now()});
+      showToast('success', 'Bonus accordé', '1 000 K ont été crédités.');
+      loadAdminUsers();
+    });
+  });
+}
+
+async function openAdminUserChart(uid, userData){
+  $('adminChartTitle').textContent = 'Solde — '+(userData ? userData.prenom+" "+userData.nom : uid);
+  $('adminChartModalBackdrop').classList.add('open');
+  const snap = await db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').once('value');
+  const points = [];
+  snap.forEach(function(c){ points.push(c.val()); });
+  renderBalanceChartInto(points, $('adminChartWrap'), $('adminChartTrend'));
+}
+$('closeAdminChartModal').addEventListener('click', function(){ $('adminChartModalBackdrop').classList.remove('open'); });
+$('adminChartModalBackdrop').addEventListener('click', function(e){ if(e.target.id==='adminChartModalBackdrop') $('adminChartModalBackdrop').classList.remove('open'); });
+
+$('adminDebtForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  setLoading('adminDebtBtn', true);
+  try{
+    const debtorEmail = $('debtFromEmail').value.trim();
+    const creditorEmail = $('debtToEmail').value.trim();
+    const amount = parseFloat($('debtAmount').value);
+    const note = $('debtNote').value.trim();
+    if (debtorEmail === creditorEmail) throw {custom:"Le débiteur et le créancier doivent être différents."};
+
+    const dSnap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(debtorEmail).once('value');
+    const cSnap = await db.ref(ROOT+"/users").orderByChild('email').equalTo(creditorEmail).once('value');
+    if (!dSnap.exists() || !cSnap.exists()) throw {custom:"Un des deux utilisateurs est introuvable."};
+    const debtorUid = Object.keys(dSnap.val())[0], debtorData = Object.values(dSnap.val())[0];
+    const creditorUid = Object.keys(cSnap.val())[0], creditorData = Object.values(cSnap.val())[0];
+
+    const debtId = db.ref(ROOT+"/debts").push().key;
+    await db.ref(ROOT+"/debts/"+debtId).set({
+      debtorUid: debtorUid, debtorNom: debtorData.prenom+" "+debtorData.nom, debtorEmail: debtorEmail,
+      creditorUid: creditorUid, creditorNom: creditorData.prenom+" "+creditorData.nom, creditorEmail: creditorEmail,
+      amount: amount, note: note || null, settled: false, date: Date.now()
+    });
+    $('adminDebtForm').reset();
+    showToast('success', 'Dette créée');
+    loadAdminDebts();
+  }catch(err){
+    showToast('error', 'Erreur', (err && err.custom) || 'Impossible de créer la dette.');
+  }finally{
+    setLoading('adminDebtBtn', false);
+  }
+});
+
+async function loadAdminDebts(){
+  const snap = await db.ref(ROOT+"/debts").once('value');
+  const debts = [];
+  snap.forEach(function(c){ debts.push(Object.assign({id:c.key}, c.val())); });
+  debts.sort(function(a,b){ return b.date-a.date; });
+  if (debts.length === 0){
+    $('adminDebtsList').innerHTML = '<p style="font-size:12.5px; color:var(--text-dim);">Aucune dette enregistrée.</p>';
+    return;
+  }
+  $('adminDebtsList').innerHTML = debts.map(function(d){
+    return '<div class="debt-row">'+
+      '<div class="bm"><div class="t1">'+escapeHtml(d.debtorNom)+' doit à '+escapeHtml(d.creditorNom)+(d.settled?' (réglée)':'')+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
+      '<div class="debt-amount owe">'+formatMoney(d.amount)+'</div>'+
+      (d.settled?'':'<button class="btn-small ghost" data-id="'+d.id+'" data-act="settle">Marquer réglée</button>')+
+      '<button class="btn-small danger" data-id="'+d.id+'" data-act="delete">✕</button>'+
+    '</div>';
+  }).join('');
+  $('adminDebtsList').querySelectorAll('[data-act="settle"]').forEach(function(btn){
+    btn.addEventListener('click', async function(){ await db.ref(ROOT+"/debts/"+btn.dataset.id+"/settled").set(true); loadAdminDebts(); });
+  });
+  $('adminDebtsList').querySelectorAll('[data-act="delete"]').forEach(function(btn){
+    btn.addEventListener('click', async function(){ await db.ref(ROOT+"/debts/"+btn.dataset.id).remove(); loadAdminDebts(); });
+  });
+}
+
+function attachAdminConsole(){
+  if (adminConsoleAttached) return;
+  adminConsoleAttached = true;
+  const box = $('consoleBox');
+  db.ref(ROOT+"/transactions").orderByChild('date').limitToLast(50).on('child_added', function(snap){
+    const tx = snap.val();
+    const time = new Date(tx.date).toLocaleTimeString('fr-FR');
+    const line = document.createElement('div');
+    line.className = 'console-line';
+    line.innerHTML = '<span class="ts">['+time+']</span> '+escapeHtml(tx.fromEmail)+' → '+escapeHtml(tx.toEmail)+' : <span class="amt-pos">'+tx.amount.toFixed(2)+' K</span>'+(tx.message?(' "'+escapeHtml(tx.message)+'"'):'');
+    box.appendChild(line);
+    while (box.children.length > 200) box.removeChild(box.firstChild);
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+/* ---------------- Débloquer l'audio au premier clic ---------------- */
 document.addEventListener('click', function unlockAudio(){
   try{ ctx().resume(); }catch(e){}
   document.removeEventListener('click', unlockAudio);
