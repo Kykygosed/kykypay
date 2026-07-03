@@ -1151,6 +1151,17 @@ function showToast(type, title, sub){
   }, 4200);
 }
 
+/* ---------------- Diagnostic : révèle les erreurs JS au lieu de les avaler en silence ---------------- */
+window.addEventListener('error', function(e){
+  try{ showToast('error', 'Erreur JS', String(e.message||e).slice(0,160)); }catch(_){ /* toastWrap pas encore prêt */ }
+  console.error('[KykyPay] Erreur JS :', e.error || e.message, e.filename, e.lineno);
+});
+window.addEventListener('unhandledrejection', function(e){
+  const msg = (e.reason && (e.reason.message || e.reason.custom || e.reason.code)) || String(e.reason);
+  try{ showToast('error', 'Erreur (promesse)', String(msg).slice(0,160)); }catch(_){}
+  console.error('[KykyPay] Rejet non géré :', e.reason);
+});
+
 /* ---------------- Sons ---------------- */
 let actx;
 function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
@@ -2318,7 +2329,10 @@ function renderAdminUserList(){
     '</div>';
   }).join('');
   container.querySelectorAll('.au-row').forEach(function(row){
-    row.addEventListener('click', function(){ selectAdminUser(row.dataset.uid); });
+    row.addEventListener('click', function(){
+      try{ selectAdminUser(row.dataset.uid); }
+      catch(err){ showToast('error', "Impossible d'afficher ce compte", String(err && err.message || err)); console.error(err); }
+    });
   });
 }
 
@@ -2327,7 +2341,10 @@ function selectAdminUser(uid){
   $('adminUserList').querySelectorAll('.au-row').forEach(function(row){
     row.classList.toggle('selected', row.dataset.uid===uid);
   });
-  renderAdminDetail(uid);
+  renderAdminDetail(uid).catch(function(err){
+    showToast('error', "Erreur lors du chargement du compte", String(err && err.message || err));
+    console.error(err);
+  });
 }
 
 function renderAdminDetailEmpty(){
@@ -2495,7 +2512,11 @@ async function loadAdminDetailLog(uid){
 }
 
 async function logAdminAction(uid, message){
-  await db.ref(ROOT+"/adminLogs/"+uid).push({ message: message, byEmail: currentProfile.email, date: Date.now() });
+  try{
+    await db.ref(ROOT+"/adminLogs/"+uid).push({ message: message, byEmail: currentProfile.email, date: Date.now() });
+  }catch(err){
+    console.error('[KykyPay] Journal admin indisponible :', err);
+  }
 }
 
 async function handleAdminAction(action, u){
