@@ -1322,16 +1322,37 @@ function setLoading(btnId, loading){
 }
 
 /* ---------------- Etat d'authentification ---------------- */
+let authTransitionUid = null; // uid pour lequel on a déjà fait la mise en place complète de l'écran
 auth.onAuthStateChanged(async function(user){
   $('bootLoader').classList.add('hidden');
   if (user){
+    const isSameSessionRefresh = authTransitionUid === user.uid;
     currentUser = user;
-    const snap = await db.ref(ROOT+"/users/"+user.uid).once('value');
-    currentProfile = snap.val();
-    if (!currentProfile){
-      await auth.signOut();
+
+    if (isSameSessionRefresh){
+      // Firebase peut redéclencher onAuthStateChanged (rafraîchissement de token, etc.)
+      // alors qu'on est déjà connecté avec le même compte : on met juste le profil à jour
+      // en silence, sans toucher à l'écran actuellement affiché (ex: panneau admin ouvert).
+      const snap = await db.ref(ROOT+"/users/"+user.uid).once('value');
+      const fresh = snap.val();
+      if (fresh){
+        currentProfile = fresh;
+        if (currentProfile.disabled){ await auth.signOut(); return; }
+        if (!$('appScreen').classList.contains('hidden')) renderProfile();
+      }
       return;
     }
+
+    const snap = await db.ref(ROOT+"/users/"+user.uid).once('value');
+    currentProfile = snap.val();
+    if (!currentProfile || currentProfile.disabled){
+      await auth.signOut();
+      if (currentProfile && currentProfile.disabled){
+        showToast('error', 'Compte suspendu', 'Ce compte a été suspendu par un administrateur.');
+      }
+      return;
+    }
+    authTransitionUid = user.uid;
     $('authScreen').classList.add('hidden');
     $('adminScreen').classList.add('hidden');
     $('appScreen').classList.remove('hidden');
@@ -1340,6 +1361,7 @@ auth.onAuthStateChanged(async function(user){
     ensureBalanceCheckpoint();
     maybeAskPseudo();
   } else {
+    authTransitionUid = null;
     currentUser = null; currentProfile = null; knownTxIds = new Set(); knownIncomingReqIds = new Set(); listenersAttached = false;
     $('appScreen').classList.add('hidden');
     $('adminScreen').classList.add('hidden');
@@ -2207,10 +2229,6 @@ let adminUsersCache = [];
 let adminIpCounts = {};
 let adminSelectedUid = null;
 let adminSearchQuery = '';
-/* Jeton de rendu : incrémenté à chaque sélection/rechargement pour éviter
-   qu'un rendu "en retard" (requête réseau plus lente) n'écrase un rendu plus récent
-   et ne fasse "disparaître" le panneau détail. */
-let adminRenderToken = 0;
 
 function openAdmin(){
   $('appScreen').classList.add('hidden');
@@ -2263,10 +2281,7 @@ async function loadAdminUsers(){
 
   if (adminSelectedUid){
     const still = users.find(function(u){ return u.uid===adminSelectedUid; });
-    /* On génère un nouveau jeton ici : ce rafraîchissement de liste devient
-       la "dernière" opération légitime en droit d'écrire le panneau détail. */
-    if (still) renderAdminDetail(adminSelectedUid, ++adminRenderToken);
-    else { adminSelectedUid = null; renderAdminDetailEmpty(); }
+    if (still) renderAdminDetail(adminSelectedUid); else { adminSelectedUid = null; renderAdminDetailEmpty(); }
   }
 }
 
@@ -2309,25 +2324,19 @@ function renderAdminUserList(){
 
 function selectAdminUser(uid){
   adminSelectedUid = uid;
-  /* Nouveau jeton : ce clic devient la référence. Toute réponse réseau
-     issue d'un ancien appel à renderAdminDetail sera ignorée. */
-  const token = ++adminRenderToken;
   $('adminUserList').querySelectorAll('.au-row').forEach(function(row){
     row.classList.toggle('selected', row.dataset.uid===uid);
   });
-  renderAdminDetail(uid, token);
+  renderAdminDetail(uid);
 }
 
 function renderAdminDetailEmpty(){
   $('adminDetail').innerHTML = '<div class="admin-detail-empty"><div class="adi">🗂️</div><div class="adt">Sélectionnez un utilisateur</div><div class="ads">Cliquez sur un compte dans la liste à gauche pour voir ses informations, son solde, ses transactions et agir dessus.</div></div>';
 }
 
-async function renderAdminDetail(uid, token){
-  if (token === undefined) token = ++adminRenderToken;
+async function renderAdminDetail(uid){
   const u = adminUsersCache.find(function(x){ return x.uid===uid; });
   if (!u) return;
-  if (token !== adminRenderToken) return; // une sélection plus récente a eu lieu entre-temps
-
   const detail = $('adminDetail');
   const av = u.photoB64 ? '<img src="'+u.photoB64+'">' : initials(u.prenom, u.nom);
   const dup = u.ip && adminIpCounts[u.ip] > 1;
@@ -2403,98 +2412,86 @@ async function renderAdminDetail(uid, token){
     btn.addEventListener('click', function(){ handleAdminAction(btn.dataset.act, u); });
   });
 
-  loadAdminDetailChart(uid, token);
-  loadAdminDetailTx(uid, token);
-  loadAdminDetailDebts(uid, token);
-  loadAdminDetailLog(uid, token);
+  loadAdminDetailChart(uid);
+  loadAdminDetailTx(uid);
+  loadAdminDetailDebts(uid);
+  loadAdminDetailLog(uid);
 }
 
-async function loadAdminDetailChart(uid, token){
-  try{
-    const snap = await db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').once('value');
-    if (token !== adminRenderToken) return;
-    const points = [];
-    snap.forEach(function(c){ points.push(c.val()); });
-    const wrap = $('adDetailChart');
-    if (!wrap) return;
-    const fakeTrend = document.createElement('div');
-    renderBalanceChartInto(points, wrap, fakeTrend);
-  }catch(e){ console.error('loadAdminDetailChart', e); }
+async function loadAdminDetailChart(uid){
+  const snap = await db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').once('value');
+  const points = [];
+  snap.forEach(function(c){ points.push(c.val()); });
+  const wrap = $('adDetailChart');
+  if (!wrap) return;
+  const fakeTrend = document.createElement('div');
+  renderBalanceChartInto(points, wrap, fakeTrend);
 }
 
-async function loadAdminDetailTx(uid, token){
-  try{
-    const results = await Promise.all([
-      db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid).limitToLast(6).once('value'),
-      db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid).limitToLast(6).once('value')
-    ]);
-    if (token !== adminRenderToken) return;
-    const map = new Map();
-    results[0].forEach(function(c){ map.set(c.key, c.val()); });
-    results[1].forEach(function(c){ map.set(c.key, c.val()); });
-    const list = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; }).slice(0,8);
-    const el = $('adDetailTx');
-    if (!el) return;
-    if (list.length===0){ el.innerHTML = '<div class="chart-empty">Aucune transaction.</div>'; return; }
-    el.innerHTML = list.map(function(tx){
-      const received = tx.toUid === uid;
-      const other = received ? tx.fromNom : tx.toNom;
-      return '<div class="ad-tx-row">'+
-        '<div class="arrow '+(received?'in':'out')+'">'+(received?'↙':'↗')+'</div>'+
-        '<div class="mid"><div class="m1">'+(received?'Reçu de ':'Envoyé à ')+escapeHtml(other)+'</div><div class="m2">'+(tx.message?escapeHtml(tx.message)+' · ':'')+fmtDate(tx.date)+'</div></div>'+
-        '<div class="amt '+(received?'pos':'neg')+'" style="color:'+(received?'var(--teal)':'var(--red)')+'">'+(received?'+':'−')+' '+formatMoney(tx.amount).trim()+'</div>'+
-      '</div>';
-    }).join('');
-  }catch(e){ console.error('loadAdminDetailTx', e); }
+async function loadAdminDetailTx(uid){
+  const results = await Promise.all([
+    db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid).limitToLast(6).once('value'),
+    db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid).limitToLast(6).once('value')
+  ]);
+  const map = new Map();
+  results[0].forEach(function(c){ map.set(c.key, c.val()); });
+  results[1].forEach(function(c){ map.set(c.key, c.val()); });
+  const list = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; }).slice(0,8);
+  const el = $('adDetailTx');
+  if (!el) return;
+  if (list.length===0){ el.innerHTML = '<div class="chart-empty">Aucune transaction.</div>'; return; }
+  el.innerHTML = list.map(function(tx){
+    const received = tx.toUid === uid;
+    const other = received ? tx.fromNom : tx.toNom;
+    return '<div class="ad-tx-row">'+
+      '<div class="arrow '+(received?'in':'out')+'">'+(received?'↙':'↗')+'</div>'+
+      '<div class="mid"><div class="m1">'+(received?'Reçu de ':'Envoyé à ')+escapeHtml(other)+'</div><div class="m2">'+(tx.message?escapeHtml(tx.message)+' · ':'')+fmtDate(tx.date)+'</div></div>'+
+      '<div class="amt '+(received?'pos':'neg')+'" style="color:'+(received?'var(--teal)':'var(--red)')+'">'+(received?'+':'−')+' '+formatMoney(tx.amount).trim()+'</div>'+
+    '</div>';
+  }).join('');
 }
 
-async function loadAdminDetailDebts(uid, token){
-  try{
-    const results = await Promise.all([
-      db.ref(ROOT+"/debts").orderByChild('debtorUid').equalTo(uid).once('value'),
-      db.ref(ROOT+"/debts").orderByChild('creditorUid').equalTo(uid).once('value')
-    ]);
-    if (token !== adminRenderToken) return;
-    const map = new Map();
-    results[0].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
-    results[1].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
-    const list = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; });
-    const el = $('adDetailDebts');
-    if (!el) return;
-    if (list.length===0){ el.innerHTML = '<div class="chart-empty">Aucune dette liée.</div>'; return; }
-    el.innerHTML = list.map(function(d){
-      const isDebtor = d.debtorUid === uid;
-      const label = isDebtor ? ('Doit à '+escapeHtml(d.creditorNom)) : (escapeHtml(d.debtorNom)+' lui doit');
-      return '<div class="debt-row">'+
-        '<div class="bm"><div class="t1">'+label+(d.settled?' (réglée)':'')+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
-        '<div class="debt-amount '+(isDebtor?'owe':'owed')+'">'+formatMoney(d.amount)+'</div>'+
-        (d.settled?'':'<button class="btn-small ghost" data-id="'+d.id+'" data-act="settle">Régler</button>')+
-      '</div>';
-    }).join('');
-    el.querySelectorAll('[data-act="settle"]').forEach(function(btn){
-      btn.addEventListener('click', async function(){
-        await db.ref(ROOT+"/debts/"+btn.dataset.id+"/settled").set(true);
-        loadAdminDetailDebts(uid, adminRenderToken);
-        showToast('success', 'Dette marquée comme réglée');
-      });
+async function loadAdminDetailDebts(uid){
+  const results = await Promise.all([
+    db.ref(ROOT+"/debts").orderByChild('debtorUid').equalTo(uid).once('value'),
+    db.ref(ROOT+"/debts").orderByChild('creditorUid').equalTo(uid).once('value')
+  ]);
+  const map = new Map();
+  results[0].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+  results[1].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+  const list = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; });
+  const el = $('adDetailDebts');
+  if (!el) return;
+  if (list.length===0){ el.innerHTML = '<div class="chart-empty">Aucune dette liée.</div>'; return; }
+  el.innerHTML = list.map(function(d){
+    const isDebtor = d.debtorUid === uid;
+    const label = isDebtor ? ('Doit à '+escapeHtml(d.creditorNom)) : (escapeHtml(d.debtorNom)+' lui doit');
+    return '<div class="debt-row">'+
+      '<div class="bm"><div class="t1">'+label+(d.settled?' (réglée)':'')+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
+      '<div class="debt-amount '+(isDebtor?'owe':'owed')+'">'+formatMoney(d.amount)+'</div>'+
+      (d.settled?'':'<button class="btn-small ghost" data-id="'+d.id+'" data-act="settle">Régler</button>')+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('[data-act="settle"]').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      await db.ref(ROOT+"/debts/"+btn.dataset.id+"/settled").set(true);
+      loadAdminDetailDebts(uid);
+      showToast('success', 'Dette marquée comme réglée');
     });
-  }catch(e){ console.error('loadAdminDetailDebts', e); }
+  });
 }
 
-async function loadAdminDetailLog(uid, token){
-  try{
-    const snap = await db.ref(ROOT+"/adminLogs/"+uid).orderByChild('date').limitToLast(10).once('value');
-    if (token !== adminRenderToken) return;
-    const logs = [];
-    snap.forEach(function(c){ logs.push(c.val()); });
-    logs.sort(function(a,b){ return b.date-a.date; });
-    const el = $('adDetailLog');
-    if (!el) return;
-    if (logs.length===0){ el.innerHTML = '<div class="chart-empty">Aucune action admin enregistrée pour ce compte.</div>'; return; }
-    el.innerHTML = logs.map(function(l){
-      return '<div class="ad-log-row"><div class="lt">'+fmtDate(l.date)+'</div><div class="lm">'+escapeHtml(l.message)+' <span style="color:var(--text-dim);">— par '+escapeHtml(l.byEmail||'admin')+'</span></div></div>';
-    }).join('');
-  }catch(e){ console.error('loadAdminDetailLog', e); }
+async function loadAdminDetailLog(uid){
+  const snap = await db.ref(ROOT+"/adminLogs/"+uid).orderByChild('date').limitToLast(10).once('value');
+  const logs = [];
+  snap.forEach(function(c){ logs.push(c.val()); });
+  logs.sort(function(a,b){ return b.date-a.date; });
+  const el = $('adDetailLog');
+  if (!el) return;
+  if (logs.length===0){ el.innerHTML = '<div class="chart-empty">Aucune action admin enregistrée pour ce compte.</div>'; return; }
+  el.innerHTML = logs.map(function(l){
+    return '<div class="ad-log-row"><div class="lt">'+fmtDate(l.date)+'</div><div class="lm">'+escapeHtml(l.message)+' <span style="color:var(--text-dim);">— par '+escapeHtml(l.byEmail||'admin')+'</span></div></div>';
+  }).join('');
 }
 
 async function logAdminAction(uid, message){
