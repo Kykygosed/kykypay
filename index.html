@@ -2356,46 +2356,23 @@ function renderAdminDetailEmpty(){
    (plus aucun sous-bloc qui se met à jour tout seul après coup). Un compteur de
    requête protège aussi contre le cas où on clique très vite sur deux comptes
    différents : seule la dernière sélection a le droit d'écrire à l'écran. */
-async function renderAdminDetail(uid){
-  const myRequest = ++adminDetailRequestId;
-  const detail = $('adminDetail');
-  detail.innerHTML = '<div class="admin-detail-empty"><div class="adi">⏳</div><div class="adt">Chargement du compte…</div></div>';
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('Délai dépassé — la base de données ne répond pas (vérifiez les règles/index Firebase).')); }, ms); })
+  ]);
+}
 
+/* Rendu en deux temps :
+   1) l'en-tête, le solde et les actions s'affichent TOUT DE SUITE (aucune requête réseau nécessaire, tout vient déjà du cache local des utilisateurs).
+   2) le graphique, les transactions, les dettes et le journal se chargent chacun indépendamment, avec leur propre délai maximum.
+   Si une section est lente ou échoue, elle affiche son propre message d'erreur SANS bloquer ni vider le reste du panneau. */
+function renderAdminDetail(uid){
   const u = adminUsersCache.find(function(x){ return x.uid===uid; });
-  if (!u){
-    if (myRequest === adminDetailRequestId) renderAdminDetailEmpty();
-    return;
-  }
+  if (!u){ renderAdminDetailEmpty(); return; }
 
-  let chartPoints = [], txList = [], debtList = [], logList = [];
-  try{
-    const results = await Promise.all([
-      db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').once('value'),
-      db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid).once('value'),
-      db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid).once('value'),
-      db.ref(ROOT+"/debts").orderByChild('debtorUid').equalTo(uid).once('value'),
-      db.ref(ROOT+"/debts").orderByChild('creditorUid').equalTo(uid).once('value'),
-      db.ref(ROOT+"/adminLogs/"+uid).orderByChild('date').limitToLast(10).once('value').catch(function(){ return null; })
-    ]);
-    results[0].forEach(function(c){ chartPoints.push(c.val()); });
-    const txMap = new Map();
-    results[1].forEach(function(c){ txMap.set(c.key, c.val()); });
-    results[2].forEach(function(c){ txMap.set(c.key, c.val()); });
-    txList = Array.from(txMap.values()).sort(function(a,b){ return b.date-a.date; }).slice(0,8);
-    const debtMap = new Map();
-    results[3].forEach(function(c){ debtMap.set(c.key, Object.assign({id:c.key}, c.val())); });
-    results[4].forEach(function(c){ debtMap.set(c.key, Object.assign({id:c.key}, c.val())); });
-    debtList = Array.from(debtMap.values()).sort(function(a,b){ return b.date-a.date; });
-    if (results[5]){ results[5].forEach(function(c){ logList.push(c.val()); }); logList.sort(function(a,b){ return b.date-a.date; }); }
-  }catch(err){
-    if (myRequest !== adminDetailRequestId) return; // une sélection plus récente a pris le relais
-    detail.innerHTML = '<div class="admin-detail-empty"><div class="adi">⚠️</div><div class="adt">Erreur de chargement</div><div class="ads">'+escapeHtml(err && err.message || String(err))+'</div></div>';
-    return;
-  }
-
-  if (myRequest !== adminDetailRequestId) return; // une sélection plus récente a pris le relais entre-temps
-
-  detail.innerHTML = buildAdminDetailHtml(u, chartPoints, txList, debtList, logList);
+  const detail = $('adminDetail');
+  detail.innerHTML = buildAdminDetailShell(u);
 
   detail.querySelectorAll('[data-jump]').forEach(function(el){
     el.addEventListener('click', function(){ selectAdminUser(el.dataset.jump); });
@@ -2403,20 +2380,14 @@ async function renderAdminDetail(uid){
   detail.querySelectorAll('.ad-action-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ handleAdminAction(btn.dataset.act, u); });
   });
-  detail.querySelectorAll('[data-settle-debt]').forEach(function(btn){
-    btn.addEventListener('click', async function(){
-      await db.ref(ROOT+"/debts/"+btn.dataset.settleDebt+"/settled").set(true);
-      showToast('success', 'Dette marquée comme réglée');
-      renderAdminDetail(uid);
-    });
-  });
 
-  const chartWrap = $('adDetailChart');
-  const fakeTrend = document.createElement('div');
-  if (chartWrap) renderBalanceChartInto(chartPoints, chartWrap, fakeTrend);
+  loadAdminSectionChart(uid);
+  loadAdminSectionTx(uid);
+  loadAdminSectionDebts(uid);
+  loadAdminSectionLog(uid);
 }
 
-function buildAdminDetailHtml(u, chartPoints, txList, debtList, logList){
+function buildAdminDetailShell(u){
   const av = u.photoB64 ? '<img src="'+u.photoB64+'">' : initials(u.prenom, u.nom);
   const dup = u.ip && adminIpCounts[u.ip] > 1;
   const neg = (u.solde||0) < 0;
@@ -2436,30 +2407,6 @@ function buildAdminDetailHtml(u, chartPoints, txList, debtList, logList){
       others.map(function(o){ return '<div class="ru" data-jump="'+o.uid+'">→ '+escapeHtml(o.prenom+" "+o.nom)+' ('+escapeHtml(o.email)+')</div>'; }).join('')+
     '</div>';
   }
-
-  const txHtml = txList.length===0 ? '<div class="chart-empty">Aucune transaction.</div>' : txList.map(function(tx){
-    const received = tx.toUid === u.uid;
-    const other = received ? tx.fromNom : tx.toNom;
-    return '<div class="ad-tx-row">'+
-      '<div class="arrow '+(received?'in':'out')+'">'+(received?'↙':'↗')+'</div>'+
-      '<div class="mid"><div class="m1">'+(received?'Reçu de ':'Envoyé à ')+escapeHtml(other)+'</div><div class="m2">'+(tx.message?escapeHtml(tx.message)+' · ':'')+fmtDate(tx.date)+'</div></div>'+
-      '<div class="amt" style="color:'+(received?'var(--teal)':'var(--red)')+'">'+(received?'+':'−')+' '+formatMoney(tx.amount).trim()+'</div>'+
-    '</div>';
-  }).join('');
-
-  const debtsHtml = debtList.length===0 ? '<div class="chart-empty">Aucune dette liée.</div>' : debtList.map(function(d){
-    const isDebtor = d.debtorUid === u.uid;
-    const label = isDebtor ? ('Doit à '+escapeHtml(d.creditorNom)) : (escapeHtml(d.debtorNom)+' lui doit');
-    return '<div class="debt-row">'+
-      '<div class="bm"><div class="t1">'+label+(d.settled?' (réglée)':'')+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
-      '<div class="debt-amount '+(isDebtor?'owe':'owed')+'">'+formatMoney(d.amount)+'</div>'+
-      (d.settled?'':'<button class="btn-small ghost" data-settle-debt="'+d.id+'">Régler</button>')+
-    '</div>';
-  }).join('');
-
-  const logHtml = logList.length===0 ? '<div class="chart-empty">Aucune action admin enregistrée pour ce compte.</div>' : logList.map(function(l){
-    return '<div class="ad-log-row"><div class="lt">'+fmtDate(l.date)+'</div><div class="lm">'+escapeHtml(l.message)+' <span style="color:var(--text-dim);">— par '+escapeHtml(l.byEmail||'admin')+'</span></div></div>';
-  }).join('');
 
   return (
     '<div class="ad-header">'+
@@ -2489,23 +2436,121 @@ function buildAdminDetailHtml(u, chartPoints, txList, debtList, logList){
       '<div>'+
         '<div class="ad-section">'+
           '<div class="ad-section-head"><h3>Évolution du solde</h3></div>'+
-          '<div class="chart-svg-wrap" id="adDetailChart"></div>'+
+          '<div class="chart-svg-wrap" id="adSecChart" data-owner="'+u.uid+'"><div class="chart-empty">Chargement…</div></div>'+
         '</div>'+
         '<div class="ad-section">'+
           '<div class="ad-section-head"><h3>Dernières transactions</h3></div>'+
-          '<div>'+txHtml+'</div>'+
+          '<div id="adSecTx" data-owner="'+u.uid+'"><div class="chart-empty">Chargement…</div></div>'+
         '</div>'+
         '<div class="ad-section">'+
           '<div class="ad-section-head"><h3>Dettes liées</h3></div>'+
-          '<div>'+debtsHtml+'</div>'+
+          '<div id="adSecDebts" data-owner="'+u.uid+'"><div class="chart-empty">Chargement…</div></div>'+
         '</div>'+
         '<div class="ad-section">'+
           '<div class="ad-section-head"><h3>Journal d\'activité admin</h3></div>'+
-          '<div>'+logHtml+'</div>'+
+          '<div id="adSecLog" data-owner="'+u.uid+'"><div class="chart-empty">Chargement…</div></div>'+
         '</div>'+
       '</div>'+
     '</div>'
   );
+}
+
+/* chaque section vérifie, avant de toucher au DOM, qu'elle correspond toujours
+   au compte actuellement sélectionné ET que son conteneur existe encore
+   (au cas où on aurait changé de sélection ou de vue pendant le chargement). */
+function sectionStillValid(id, uid){
+  const el = $(id);
+  return el && el.dataset.owner === uid && adminSelectedUid === uid;
+}
+
+async function loadAdminSectionChart(uid){
+  try{
+    const snap = await withTimeout(db.ref(ROOT+"/balanceHistory/"+uid).orderByChild('date').once('value'), 10000);
+    if (!sectionStillValid('adSecChart', uid)) return;
+    const points = [];
+    snap.forEach(function(c){ points.push(c.val()); });
+    const fakeTrend = document.createElement('div');
+    renderBalanceChartInto(points, $('adSecChart'), fakeTrend);
+  }catch(err){
+    if (!sectionStillValid('adSecChart', uid)) return;
+    $('adSecChart').innerHTML = '<div class="chart-empty">⚠️ '+escapeHtml(err && err.message || String(err))+'</div>';
+  }
+}
+
+async function loadAdminSectionTx(uid){
+  try{
+    const results = await withTimeout(Promise.all([
+      db.ref(ROOT+"/transactions").orderByChild('toUid').equalTo(uid).once('value'),
+      db.ref(ROOT+"/transactions").orderByChild('fromUid').equalTo(uid).once('value')
+    ]), 10000);
+    if (!sectionStillValid('adSecTx', uid)) return;
+    const map = new Map();
+    results[0].forEach(function(c){ map.set(c.key, c.val()); });
+    results[1].forEach(function(c){ map.set(c.key, c.val()); });
+    const txList = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; }).slice(0,8);
+    $('adSecTx').innerHTML = txList.length===0 ? '<div class="chart-empty">Aucune transaction.</div>' : txList.map(function(tx){
+      const received = tx.toUid === uid;
+      const other = received ? tx.fromNom : tx.toNom;
+      return '<div class="ad-tx-row">'+
+        '<div class="arrow '+(received?'in':'out')+'">'+(received?'↙':'↗')+'</div>'+
+        '<div class="mid"><div class="m1">'+(received?'Reçu de ':'Envoyé à ')+escapeHtml(other)+'</div><div class="m2">'+(tx.message?escapeHtml(tx.message)+' · ':'')+fmtDate(tx.date)+'</div></div>'+
+        '<div class="amt" style="color:'+(received?'var(--teal)':'var(--red)')+'">'+(received?'+':'−')+' '+formatMoney(tx.amount).trim()+'</div>'+
+      '</div>';
+    }).join('');
+  }catch(err){
+    if (!sectionStillValid('adSecTx', uid)) return;
+    $('adSecTx').innerHTML = '<div class="chart-empty">⚠️ '+escapeHtml(err && err.message || String(err))+'</div>';
+  }
+}
+
+async function loadAdminSectionDebts(uid){
+  try{
+    const results = await withTimeout(Promise.all([
+      db.ref(ROOT+"/debts").orderByChild('debtorUid').equalTo(uid).once('value'),
+      db.ref(ROOT+"/debts").orderByChild('creditorUid').equalTo(uid).once('value')
+    ]), 10000);
+    if (!sectionStillValid('adSecDebts', uid)) return;
+    const map = new Map();
+    results[0].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+    results[1].forEach(function(c){ map.set(c.key, Object.assign({id:c.key}, c.val())); });
+    const debtList = Array.from(map.values()).sort(function(a,b){ return b.date-a.date; });
+    $('adSecDebts').innerHTML = debtList.length===0 ? '<div class="chart-empty">Aucune dette liée.</div>' : debtList.map(function(d){
+      const isDebtor = d.debtorUid === uid;
+      const label = isDebtor ? ('Doit à '+escapeHtml(d.creditorNom)) : (escapeHtml(d.debtorNom)+' lui doit');
+      return '<div class="debt-row">'+
+        '<div class="bm"><div class="t1">'+label+(d.settled?' (réglée)':'')+'</div><div class="t2">'+(d.note?escapeHtml(d.note)+' · ':'')+fmtDate(d.date)+'</div></div>'+
+        '<div class="debt-amount '+(isDebtor?'owe':'owed')+'">'+formatMoney(d.amount)+'</div>'+
+        (d.settled?'':'<button class="btn-small ghost" data-settle-debt="'+d.id+'">Régler</button>')+
+      '</div>';
+    }).join('');
+    $('adSecDebts').querySelectorAll('[data-settle-debt]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        await db.ref(ROOT+"/debts/"+btn.dataset.settleDebt+"/settled").set(true);
+        showToast('success', 'Dette marquée comme réglée');
+        loadAdminSectionDebts(uid);
+      });
+    });
+  }catch(err){
+    if (!sectionStillValid('adSecDebts', uid)) return;
+    $('adSecDebts').innerHTML = '<div class="chart-empty">⚠️ '+escapeHtml(err && err.message || String(err))+'</div>';
+  }
+}
+
+async function loadAdminSectionLog(uid){
+  try{
+    const snap = await withTimeout(db.ref(ROOT+"/adminLogs/"+uid).orderByChild('date').limitToLast(10).once('value'), 10000);
+    if (!sectionStillValid('adSecLog', uid)) return;
+    const logs = [];
+    snap.forEach(function(c){ logs.push(c.val()); });
+    logs.sort(function(a,b){ return b.date-a.date; });
+    $('adSecLog').innerHTML = logs.length===0 ? '<div class="chart-empty">Aucune action admin enregistrée pour ce compte.</div>' : logs.map(function(l){
+      return '<div class="ad-log-row"><div class="lt">'+fmtDate(l.date)+'</div><div class="lm">'+escapeHtml(l.message)+' <span style="color:var(--text-dim);">— par '+escapeHtml(l.byEmail||'admin')+'</span></div></div>';
+    }).join('');
+  }catch(err){
+    if (!sectionStillValid('adSecLog', uid)) return;
+    // le journal est une fonctionnalité annexe : une erreur ici (ex: règles Firebase pas encore configurées) ne doit pas alarmer l'admin
+    $('adSecLog').innerHTML = '<div class="chart-empty">Journal indisponible pour l\'instant.</div>';
+  }
 }
 
 async function logAdminAction(uid, message){
