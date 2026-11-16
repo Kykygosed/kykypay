@@ -444,6 +444,7 @@ input,select,textarea{font-family:inherit;}
             <label class="switch"><input type="checkbox" id="soundToggle" checked><span class="track"></span></label>
           </div>
           <button class="pm-item admin hidden" id="pmAdmin">🛠 Panneau admin</button>
+          <button class="pm-item admin hidden" id="pmAnnonces">📢 Annonces du jeu</button>
           <button class="pm-item danger" id="pmLogout">⎋ Se déconnecter</button>
         </div>
       </div>
@@ -1172,6 +1173,7 @@ function renderProfile(){
   $('pmConvertBiz').classList.toggle('hidden', isBiz);
   $('employeesPanel').style.display = isBiz ? '' : 'none';
   $('pmAdmin').classList.toggle('hidden', p.isAdmin !== true);
+  $('pmAnnonces').classList.toggle('hidden', p.isAdmin !== true);
 
   if (p.pendingStartBonus){
     $('miniNote').innerHTML = '⏳ Votre bonus de bienvenue de 1 000 K est en attente de validation par un administrateur.';
@@ -2054,6 +2056,12 @@ $('pmAdmin').addEventListener('click', function(e){
   e.stopPropagation();
   $('profileMenu').classList.remove('open');
   window.location.href = 'admin.html';
+});
+
+$('pmAnnonces').addEventListener('click', function(e){
+  e.stopPropagation();
+  $('profileMenu').classList.remove('open');
+  window.location.href = 'admin-annonces.html';
 });
 
 /* ---------------- Débloquer l'audio au premier clic ---------------- */
