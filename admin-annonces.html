@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KykyPay — Annonces du jeu</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#150f35;--s1:#211a50;--s2:#2a2162;--s3:#352b78;--line:rgba(255,255,255,.11);--tx:#F5F2FF;--mu:#B0A9DC;--gold:#FFC247;--red:#FF6B81;--teal:#4BE3B0;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 'DM Sans',sans-serif;min-height:100vh}
+h1,h2{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em}
+a{color:var(--gold)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+header{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem 1.6rem;border-bottom:1px solid var(--line)}
+header h1{font-size:1.4rem}
+main{max-width:50rem;margin:0 auto;padding:1.6rem 1.2rem 4rem;display:grid;gap:1.4rem}
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:1.4rem}
+.panel h2{font-size:1.2rem;margin-bottom:1rem}
+label{display:block;font-size:.85rem;color:var(--mu);margin-bottom:1rem}
+.in{width:100%;margin-top:.35rem;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:.7rem .85rem}
+textarea.in{min-height:9rem;resize:vertical}
+.row{display:grid;grid-template-columns:11rem 1fr;gap:1rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.btn{border:0;border-radius:12px;padding:.75rem 1.4rem;font-weight:700;cursor:pointer;background:var(--gold);color:#150f35}
+.btn.alt{background:var(--s3);color:var(--tx)}
+.btn.danger{background:rgba(255,107,129,.16);color:#ff9aa9}
+.btn.small{padding:.4rem .9rem;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:wait}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.msg{font-size:.9rem;min-height:1.3rem;margin-bottom:.6rem}
+.msg.err{color:var(--red)} .msg.ok{color:var(--teal)}
+.item{border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:.8rem;background:var(--s2)}
+.item .meta{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;font-size:.85rem;color:var(--mu);margin-bottom:.3rem}
+.tag{background:var(--s3);border-radius:999px;padding:.1rem .7rem;font-weight:700;color:var(--tx);font-size:.8rem}
+.item h3{font-size:1.05rem;margin-bottom:.3rem}
+.item p{color:var(--mu);white-space:pre-line;margin-bottom:.8rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.empty{color:var(--mu);text-align:center;padding:1.5rem}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>📢 Annonces du jeu</h1>
+  <a href="index.html">← Retour à KykyPay</a>
+</header>
+<main>
+  <div class="panel hidden" id="gate"><p id="gateMsg"></p></div>
+
+  <div class="panel hidden" id="editor">
+    <h2 id="formTitle">Nouvelle annonce</h2>
+    <div class="msg" id="msg"></div>
+    <form id="form">
+      <div class="row">
+        <label>Catégorie
+          <select class="in" id="tag">
+            <option>Nouveauté</option><option>Mise à jour</option><option>Événement</option><option>Info</option>
+          </select>
+        </label>
+        <label>Titre<input class="in" id="title" maxlength="100" required></label>
+      </div>
+      <label>Message<textarea class="in" id="body" maxlength="3000" required></textarea></label>
+      <div class="actions">
+        <button class="btn" type="submit" id="saveBtn">Publier</button>
+        <button class="btn alt hidden" type="button" id="cancelEdit">Annuler la modification</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel hidden" id="listPanel">
+    <h2>Annonces publiées</h2>
+    <div id="list"><div class="empty">Chargement…</div></div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBPq6Wfxzq02MfK69BFxHm9_FUjDGTmAcw",authDomain:"kykychat-24c7f.firebaseapp.com",
+  databaseURL:"https://kykychat-24c7f-default-rtdb.firebaseio.com",projectId:"kykychat-24c7f",
+  storageBucket:"kykychat-24c7f.firebasestorage.app",messagingSenderId:"342562811927",appId:"1:342562811927:web:0fed1e1f511c4fddcfec52"
+});
+const auth=firebase.auth(), db=firebase.database(), ROOT="kykypay";
+const $=id=>document.getElementById(id);
+let me=null, editingId=null, items=[], listening=false;
+
+function gate(text){
+  $('editor').classList.add('hidden'); $('listPanel').classList.add('hidden');
+  $('gate').classList.remove('hidden'); $('gateMsg').textContent=text;
+}
+function flash(text,cls){ const m=$('msg'); m.textContent=text; m.className='msg '+(cls||''); }
+
+auth.onAuthStateChanged(async function(u){
+  if(!u){ gate("Connecte-toi d’abord sur KykyPay, puis rouvre cette page."); return; }
+  const p=(await db.ref(ROOT+"/users/"+u.uid).once('value')).val();
+  if(!p || p.isAdmin!==true){ gate("Cette page est réservée aux administrateurs KykyPay."); return; }
+  me={uid:u.uid, name:p.pseudo?('@'+p.pseudo):(p.prenom+' '+p.nom)};
+  $('gate').classList.add('hidden'); $('editor').classList.remove('hidden'); $('listPanel').classList.remove('hidden');
+  if(!listening){ listening=true; listen(); }
+});
+
+function listen(){
+  db.ref(ROOT+"/announcements").orderByChild('date').on('value', function(snap){
+    items=[]; snap.forEach(function(c){ items.push(Object.assign({id:c.key}, c.val())); });
+    items.sort(function(a,b){ return b.date-a.date; });
+    render();
+  }, function(){ $('list').innerHTML='<div class="empty">Lecture impossible : vérifiez les règles Firebase.</div>'; });
+}
+
+function render(){
+  const box=$('list'); box.innerHTML='';
+  if(!items.length){ box.innerHTML='<div class="empty">Aucune annonce publiée.</div>'; return; }
+  items.forEach(function(a){
+    const el=document.createElement('div'); el.className='item';
+    const meta=document.createElement('div'); meta.className='meta';
+    const tag=document.createElement('span'); tag.className='tag'; tag.textContent=a.tag||'Info';
+    const d=document.createElement('span');
+    d.textContent=new Date(a.date).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+(a.updatedAt?' (modifiée)':'')+' · '+(a.authorName||'');
+    meta.appendChild(tag); meta.appendChild(d);
+    const h=document.createElement('h3'); h.textContent=a.title||'';
+    const p=document.createElement('p'); p.textContent=a.body||'';
+    const act=document.createElement('div'); act.className='actions';
+    const e=document.createElement('button'); e.className='btn alt small'; e.type='button'; e.textContent='Modifier';
+    e.onclick=function(){ startEdit(a); };
+    const x=document.createElement('button'); x.className='btn danger small'; x.type='button'; x.textContent='Supprimer';
+    x.onclick=function(){ remove(a); };
+    act.appendChild(e); act.appendChild(x);
+    el.appendChild(meta); el.appendChild(h); el.appendChild(p); el.appendChild(act);
+    box.appendChild(el);
+  });
+}
+
+function startEdit(a){
+  editingId=a.id;
+  $('formTitle').textContent='Modifier l’annonce';
+  $('saveBtn').textContent='Enregistrer';
+  $('cancelEdit').classList.remove('hidden');
+  $('tag').value=a.tag||'Info'; $('title').value=a.title||''; $('body').value=a.body||'';
+  flash('');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function resetForm(){
+  editingId=null; $('form').reset();
+  $('formTitle').textContent='Nouvelle annonce';
+  $('saveBtn').textContent='Publier';
+  $('cancelEdit').classList.add('hidden');
+}
+$('cancelEdit').onclick=function(){ resetForm(); flash(''); };
+
+$('form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const data={ tag:$('tag').value, title:$('title').value.trim(), body:$('body').value.trim() };
+  if(!data.title||!data.body){ flash('Titre et message obligatoires.','err'); return; }
+  $('saveBtn').disabled=true;
+  try{
+    if(editingId){
+      data.updatedAt=Date.now();
+      await db.ref(ROOT+"/announcements/"+editingId).update(data);
+      flash('Annonce modifiée.','ok');
+    } else {
+      data.date=Date.now(); data.authorUid=me.uid; data.authorName=me.name;
+      await db.ref(ROOT+"/announcements").push(data);
+      flash('Annonce publiée : elle apparaît maintenant sur KykyWorld.','ok');
+    }
+    resetForm();
+  }catch(err){
+    flash('Échec de l’enregistrement : vérifiez que vos règles Firebase autorisent les admins à écrire.','err');
+  }finally{
+    $('saveBtn').disabled=false;
+  }
+});
+
+async function remove(a){
+  if(!confirm('Supprimer l’annonce « '+(a.title||'')+' » ?')) return;
+  try{ await db.ref(ROOT+"/announcements/"+a.id).remove(); if(editingId===a.id) resetForm(); flash('Annonce supprimée.','ok'); }
+  catch(err){ flash('Suppression impossible.','err'); }
+}
+</script>
+</body>
+</html>
